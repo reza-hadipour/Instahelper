@@ -5,6 +5,9 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const rfs = require('rotating-file-stream');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
+const YAML = require('yamljs');
 
 // Set Debug
 const debug = require('debug')('instaHelper:app');
@@ -27,6 +30,7 @@ class Application{
         this.setupExpress();
         this.setMongoConnection();
         this.setConfigs();
+        this.setSwagger();
         this.setRoutes();
     }
 
@@ -54,6 +58,33 @@ class Application{
         app.use(cookieParser());
         app.use(express.static(path.join(__dirname,'public')));
 
+    }
+
+    setSwagger(){
+
+        let swaggerOptions = swaggerJsDoc({
+            swaggerDefinition:{
+                openapi : '3.0.0',
+                info:{
+                    title: 'Instagram Helper API',
+                    version : '1.0.0',
+                    description : 'This is a practical project',
+                    contact:{
+                        name: "Reza Hadipour",
+                        email: "Reza.hadipour2002@gmail.com",
+                        url: "http:\\therahanik.ir"
+                    }
+                },
+                servers : [{
+                    url: '/v1'
+                },{
+                    url: `http:${configs.host}:${port}`
+                }]
+            },
+            apis : [path.join(__dirname,'..','swagger','*.yaml')]
+        });
+
+        app.use('/api-doc',swaggerUi.serve,swaggerUi.setup(swaggerOptions,{explorer:true}));
     }
 
     setLogger(){

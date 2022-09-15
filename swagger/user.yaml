@@ -1,0 +1,26 @@
+paths:
+  /login:
+    get:
+      tags: ["User API"]
+      summary: 'to authentication'
+      responses:
+        200:
+          description: 'Nothing to say'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      example: 1001
+                    name:
+                      type: string
+                      example: RezA
+        500:
+          $ref: '#/components/responses/500Response'
+        404:
+          $ref: "#/components/responses/404Response"
+
+                      

@@ -1,0 +1,35 @@
+components:
+  responses:
+    500Response:
+      description: "Server Errors"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 500
+              errors:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error in server"
+    404Response:
+      description: "Not found error"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 404
+              errors:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "صفحه مورد نظر یافت نشد."
+    
