@@ -5,14 +5,14 @@ let bcrypt = require('bcrypt');
 const userSchema = Schema({
     name: {type: String},
     family: {type: String},
-    email: {type: String, unique: true, required: true},
-    password: {type: String, required: true},
-    mobile: {type: String ,  required:true , unique:true},
+    email: {type: String, unique: false, required: false},
+    password: {type: String, required: false},
+    mobile: {type: String ,  required:true , unique:false},
     otp: {type: Object , default:{
         code: 0,
         expiresIn : 0
     }},
-    roles: {type: [mongoose.Types.ObjectId], ref: "reole"},
+    roles: {type: [String], default:['USER']},
     catalogues : {type: [mongoose.Types.ObjectId], ref: "catalogue"}
 },{timestamps: true, toJSON:{virtuals: true}});
 

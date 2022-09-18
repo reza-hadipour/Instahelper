@@ -1,12 +1,11 @@
 const Controller = require("../controller");
 const createHttpError = require("http-errors");
-
 const {validationResult} = require('express-validator');
+
+const { randomNumberGenerator } = require("../../../../helpers");
 
 // Models
 const userModel = require('../../../models/user');
-const { json } = require("express");
-const { now } = require("mongoose");
 
 class registerController extends Controller{
     async regiser(req,res,next){
@@ -17,8 +16,8 @@ class registerController extends Controller{
         let user = new userModel(req.body);
             user.password = user.hashPassword(user.password);
             user.otp = {
-                code : Math.round(Math.random()* (999999 - 100000))+100000, // xxx-xxx
-                expiresIn : new Date(new Date().getTime() + 10*60000)   // 10 Min
+                code : randomNumberGenerator() , // xxx-xxx
+                expiresIn : new Date().getTime() + 10*60000   // 10 Min
             }
             user.save(err=>{
                 if(err) {

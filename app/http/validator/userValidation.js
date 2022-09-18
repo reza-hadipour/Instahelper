@@ -1,4 +1,4 @@
-let {check} = require('express-validator');
+let {check,body} = require('express-validator');
 const Validator = require('./validator');
 
 const userModel = require('../../models/user');
@@ -6,17 +6,17 @@ const userModel = require('../../models/user');
 class userValidation extends Validator{
     checkRegister(){
         return[
-            check('name')
+            body('name')
                 .notEmpty()
                     .withMessage('نام را وارد کنید.'),
-            check('email')
+            body('email')
                 .isEmail()
                     .withMessage('ایمیل را وارد کنید.')
                 .custom(async (value)=>{
                     let user = await userModel.findOne({"email":value});
                     if(user) throw new Error('ایمیل وارد شده تکراری است');
                 }),
-            check('password')
+            body('password')
                 .notEmpty()
                     .withMessage('رمز ورود را وارد کنید.')
                 .isLength({min:8})
@@ -38,7 +38,7 @@ class userValidation extends Validator{
                     .withMessage('رمزعبور باید دارای حروف کوچک باشد.')
                 .matches('[ !"#$%&\'()*+,\-./:;<=>?@[\\\]^_`{|}~]')
                     .withMessage('رمزعبور باید شامل حداقل یک کاراکتر خاص (!@#$%^&*) باشد.'),
-            check('mobile')
+            body('mobile')
                 .matches('^(\\+{1})(\\d{12})$')
                     .withMessage('فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789')
                 .custom(async (value)=>{
@@ -47,6 +47,25 @@ class userValidation extends Validator{
                 }),
                 
                 
+        ]
+    }
+
+    checkGetOtp(){
+        return [
+            body('mobile')
+            .matches('^(\\+{1})(\\d{12})$')
+                .withMessage('فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789')
+        ]
+    }
+
+    checkOtp(){
+        return[
+            body('mobile')
+                .matches('^(\\+{1})(\\d{12})$')
+                    .withMessage('فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789'),
+            body('code')
+                .matches('^\\d{6}$')
+                    .withMessage('رمز یکبار مصرف را وارد کنید.')
         ]
     }
 }

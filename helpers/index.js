@@ -15,7 +15,19 @@ function normalizePort(val) {
     return false;
   }
 
+  function randomNumberGenerator(min = 100000,max = 999999){
+    return Math.round(Math.random() * (max - min)) + min;
+  }
+
+  function normalizeData(dataObject = {}){
+    Object.keys(dataObject).forEach(key=>{
+        if([""," ",0,null, undefined,"0",NaN].includes(dataObject[key])) delete dataObject[key];
+    });
+    return dataObject;
+}
 
   module.exports = {
-    normalizePort
+    normalizePort,
+    randomNumberGenerator,
+    normalizeData
   }
