@@ -1,7 +1,9 @@
 let router = require('express').Router();
 
-router.get('/login',(req,res,next)=>{
-    res.json('LOGIN');
+router.get('/',(req,res,next)=>{
+    res.json({
+        "API Verison" : "1.0.0"
+    });
 })
 
 module.exports = router;

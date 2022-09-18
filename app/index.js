@@ -1,17 +1,16 @@
 const express = require('express');
 const app = express();
-const { default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const rfs = require('rotating-file-stream');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
-const YAML = require('yamljs');
 
 // Set Debug
-const debug = require('debug')('instaHelper:app');
-const debugDB = require('debug')('instaHelper:database');
+debug = require('debug')('instaHelper:app');
+debugDB = require('debug')('instaHelper:database');
 
 const {normalizePort} = require('../helpers');
 

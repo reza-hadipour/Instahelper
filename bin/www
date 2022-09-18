@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require('dotenv').config();
 global.configs = require('../configs');
-require('app-module-path').addPath(__dirname,'/app');
+require('app-module-path').addPath(__dirname);
 
 var app = require('../app/');
 // var debug = require('debug')('instahelper:server');

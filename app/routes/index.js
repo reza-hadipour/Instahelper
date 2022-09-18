@@ -6,11 +6,10 @@ let apiV1 = require('./v1');
 
 router.use('/v1',apiV1);
 
-/* GET home page. */
+/* Test GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.json({ title: 'Express'});
 });
-
 
 
 /**
