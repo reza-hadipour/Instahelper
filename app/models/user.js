@@ -13,7 +13,8 @@ const userSchema = Schema({
         expiresIn : 0
     }},
     roles: {type: [String], default:['USER']},
-    catalogues : {type: [mongoose.Types.ObjectId], ref: "catalogue"}
+    catalogues : {type: [mongoose.Types.ObjectId], ref: "catalogue"},
+    verifyed : {type: Boolean, default: false}
 },{timestamps: true, toJSON:{virtuals: true}});
 
 // userSchema.pre('save',function(next){
@@ -27,6 +28,10 @@ const userSchema = Schema({
 userSchema.methods.hashPassword = function(password){
     const salt = bcrypt.genSaltSync(3);
     return bcrypt.hashSync(password,salt);
+}
+
+userSchema.methods.comparePassword = function(password){
+    return bcrypt.compareSync(password,this.password);
 }
 
 

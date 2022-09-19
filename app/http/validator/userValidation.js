@@ -1,4 +1,4 @@
-let {check,body} = require('express-validator');
+let {body} = require('express-validator');
 const Validator = require('./validator');
 
 const userModel = require('../../models/user');
@@ -44,9 +44,7 @@ class userValidation extends Validator{
                 .custom(async (value)=>{
                     let user = await userModel.findOne({"mobile":value});
                     if(user) throw new Error('موبایل وارد شده تکراری است');
-                }),
-                
-                
+                })
         ]
     }
 
@@ -66,6 +64,19 @@ class userValidation extends Validator{
             body('code')
                 .matches('^\\d{6}$')
                     .withMessage('رمز یکبار مصرف را وارد کنید.')
+        ]
+    }
+
+    checkLogin(){
+        return[
+            body('email')
+                .isEmail()
+                    .withMessage('ایمیل را وارد کنید.'),
+            body('password')
+                .isLength({min:3})
+                    .withMessage('رمبز عبور را وارد کنید.')
+                
+            
         ]
     }
 }

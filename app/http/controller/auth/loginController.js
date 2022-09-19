@@ -1,14 +1,73 @@
 const Controller = require("../controller");
 const createHttpError = require("http-errors");
 const {validationResult} = require('express-validator');
+const jwt = require('jsonwebtoken');
 
-const { randomNumberGenerator,normalizeData } = require("../../../../helpers");
+const { normalizeData } = require("../../../../helpers");
 
 // Models
 const userModel = require('../../../models/user');
 
 
 class loginController extends Controller{
+    async login(req,res,next){
+        if(!await this.validationData(req)){
+            return this.errorResponse(createHttpError.BadRequest(req.errors),res)
+        }
+
+        try {
+            let {email,password} = req.body;
+            let user = await userModel.findOne({email});
+
+            if(!user || !user.comparePassword(password)) return this.errorResponse(createHttpError.Unauthorized('اطلاعات وارد شده صحیح نمی باشد.'),res);
+
+            if(!user?.verifyed) return this.errorResponse(createHttpError.Unauthorized('حساب کاربری تایید نشده است. مجدد درخواست ارسال کد یکبارمصرف را بدهید.'),res);
+
+            ////// >>>>>>>>>>>>> Create Token
+            let accessToken = this.createTokne(user.id);
+
+            return res.json({
+                status: "success",
+                accessToken,
+                user:{
+                    id : user.id,
+                    name: user.name,
+                    family : user.family,
+                    email : user.email
+                }
+            });
+            
+        } catch (error) {
+            next(createHttpError.BadRequest(error.message));
+        }
+    }
+
+    async resendOtp(req,res,next){
+        if(!await this.validationData(req)){
+            return this.errorResponse(createHttpError.BadRequest(req.errors),res)
+        }
+
+        let {mobile} = req.body;
+
+        let user = await userModel.findOne({mobile});
+    
+        if(!user) return this.errorResponse(createHttpError.Unauthorized('اطلاعات وارد شده صحیح نمی باشد.'),res); 
+
+        let otp = this.createOtp();
+
+        user.otp = otp;
+        await user.save();
+
+        ////// >>>>>>>>>>  SEND SMS FUNCTION  <<<<<<<<<<<<<<<<  ///////
+
+        res.json({
+            status: "success",
+            mobile,
+            code : otp.code,
+            message : "کد یکبار مصرف برای شما ارسال شد."
+        });
+    }
+
     async getOtp(req,res,next){
         if(!await this.validationData(req)){
             return this.errorResponse(createHttpError.BadRequest(req.errors),res)
@@ -16,20 +75,19 @@ class loginController extends Controller{
         
         try {
             let {mobile} = req.body;
-            let otp = {
-                code: randomNumberGenerator(),  // xxx-xxx
-                expiresIn: new Date().getTime() + 10*60000 // +10 min
-            }
+
+            let otp = this.createOtp();
             const result = await this.saveUser(mobile,otp);
+            
             if(!result) throw createHttpError.BadRequest('ورود شما با خطا مواجه شد.');
 
             ////// >>>>>>>>>>  SEND SMS FUNCTION  <<<<<<<<<<<<<<<<  ///////
 
             res.json({
                 status: "success",
-                message : "کد یکبار مصرف برای شما ارسال شد.",
+                mobile,
                 code : otp.code,
-                mobile
+                message : "کد یکبار مصرف برای شما ارسال شد."
             });
 
         } catch (error) {
@@ -53,8 +111,17 @@ class loginController extends Controller{
 
             await this.clearOtp(user);
 
+            // Verify the user account
+            user.verifyed = true;
+            await user.save();
+
             ////// >>>>>>>>>>>>> Create Token
-            return res.json(user);
+            let accessToken = this.createTokne(user.id)
+
+            return res.json({
+                status: "success",
+                accessToken
+            });
             
         } catch (error) {
             next(createHttpError.BadRequest(error.message));

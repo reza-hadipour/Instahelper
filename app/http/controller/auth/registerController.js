@@ -15,15 +15,15 @@ class registerController extends Controller{
 
         let user = new userModel(req.body);
             user.password = user.hashPassword(user.password);
-            user.otp = {
-                code : randomNumberGenerator() , // xxx-xxx
-                expiresIn : new Date().getTime() + 10*60000   // 10 Min
-            }
+            user.otp = this.createOtp();
             user.save(err=>{
                 if(err) {
                     debug(err);
                     return res.json(createHttpError.InternalServerError(err));
                 }
+
+                ////// >>>>>>>>>>>  SEND OTP CODE TO Verify User Mobile
+
                 res.json({
                     status: "success",
                     user : {
@@ -31,8 +31,9 @@ class registerController extends Controller{
                         family : user.family,
                         email : user.email,
                         mobile: user.mobile,
-                        opt : user.otp
-                    }
+                        code: otp.code
+                    },
+                    message: 'Verify the user mobile number in .../auth/login/otp'
                 });
             });
     }

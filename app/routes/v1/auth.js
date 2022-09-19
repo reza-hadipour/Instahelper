@@ -1,21 +1,35 @@
 const router = require('express').Router();
+const createHttpError = require('http-errors');
 
 // Controllers
 const registerController = require('../../http/controller/auth/registerController');
 const loginController = require('../../http/controller/auth/loginController');
+const passport = require('passport');
+
+// Middleware
+const authenticateApi = require('../../http/middleware/authenticateApi');
 
 // Validators
-const {checkRegister, checkGetOtp, checkOtp} = require('../../http/validator/userValidation');
+const {checkRegister, checkGetOtp, checkOtp, checkLogin} = require('../../http/validator/userValidation');
+const userModel = require('../../models/user');
 
-// Login
-router.get('/login',(req,res,next)=>{
-    res.json({
-        'Path' : 'Login'
-    })
-})
 
-// Login using OTP - Step 1 - getting code
+// Login    using email & password - recieve Token
+router.post('/login',checkLogin(), loginController.login);
+
+// Resend Otp Code
+router.post('/resendOtp',checkGetOtp(),loginController.resendOtp);
+
+// Test Token
+router.get('/profile',authenticateApi.handle,async (req,res,next)=>{
+    let user = await userModel.findById(req.user.id);
+    res.json(user);
+});
+
+// Login using OTP - Step 1 - recieve code
 router.post('/login/getotp', checkGetOtp() , loginController.getOtp);
+
+// Login using OTP - Step 2 - verifying the code
 router.post('/login/otp', checkOtp(), loginController.checkOtp);
 
 // Register
