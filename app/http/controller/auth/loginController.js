@@ -25,10 +25,18 @@ class loginController extends Controller{
 
             ////// >>>>>>>>>>>>> Create Token
             let accessToken = this.createTokne(user.id);
+            let refreshToken = this.createRefreshTokne(user.id);
+
+            // Store Refresh Token in User
+            user.refreshToken = refreshToken;
+            await user.save();
 
             return res.json({
                 status: "success",
-                accessToken,
+                Tokens:{
+                    accessToken,
+                    refreshToken
+                },
                 user:{
                     id : user.id,
                     name: user.name,
@@ -67,6 +75,37 @@ class loginController extends Controller{
             message : "کد یکبار مصرف برای شما ارسال شد."
         });
     }
+
+    async refreshToken(req,res,next){
+        if(!await this.validationData(req)){
+            return this.errorResponse(createHttpError.BadRequest(req.errors),res)
+        }
+
+        try {
+            let {refreshToken} = req.body;
+
+            jwt.verify(refreshToken,configs.jwt.refreshTokenSecret,async (err,decoded)=>{
+                if(err) return this.errorResponse(createHttpError.BadRequest('توکن نامعتبر است.'),res);
+                let user = await userModel.findOne({refreshToken});
+                
+                if(!user) return this.errorResponse(createHttpError.NotFound('کاربر یافت نشد.'),res);
+
+                ////// >>>>>>>>>>>>> Create Token
+                let accessToken = this.createTokne(user.id);
+                refreshToken = this.createRefreshTokne(user.id);
+
+                return res.json({
+                    status: "success",
+                    accessToken
+                });
+
+            })
+        } catch (error) {
+            next(error);
+        }
+
+    }
+
 
     async getOtp(req,res,next){
         if(!await this.validationData(req)){
@@ -111,16 +150,23 @@ class loginController extends Controller{
 
             await this.clearOtp(user);
 
-            // Verify the user account
-            user.verifyed = true;
-            await user.save();
+            
 
             ////// >>>>>>>>>>>>> Create Token
             let accessToken = this.createTokne(user.id)
+            let refreshToken = this.createRefreshTokne(user.id);
+
+            // Verify the user account and store refreshToken
+            user.verifyed = true;
+            user.refreshToken = refreshToken;
+            await user.save();
 
             return res.json({
                 status: "success",
-                accessToken
+                Tokens:{
+                    accessToken,
+                    refreshToken
+                }
             });
             
         } catch (error) {

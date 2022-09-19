@@ -15,8 +15,12 @@ class Controller {
         }
     }
 
+    createRefreshTokne(userId){
+        return jwt.sign({userId},configs.jwt.refreshTokenSecret,{expiresIn: "1y"});
+    }
+
     createTokne(userId){
-        return jwt.sign({userId},configs.jwt.secret,{expiresIn: 10000});
+        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 10000});
     }
 
     errorResponse(error,res){

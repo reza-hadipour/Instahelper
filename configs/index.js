@@ -6,7 +6,8 @@ module.exports = {
     host: process.env.APPLICATION_HOST,
     database,
     jwt: {
-        secret : process.env.JWT_SECRET_KEY
+        accessTokenSecret : process.env.ACCESS_SECRET_KEY,
+        refreshTokenSecret : process.env.REFRESH_SECRET_KEY
     },
     session
 }

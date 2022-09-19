@@ -13,6 +13,7 @@ const userSchema = Schema({
         expiresIn : 0
     }},
     roles: {type: [String], default:['USER']},
+    refreshToken: {type: String, default: null},
     catalogues : {type: [mongoose.Types.ObjectId], ref: "catalogue"},
     verifyed : {type: Boolean, default: false}
 },{timestamps: true, toJSON:{virtuals: true}});

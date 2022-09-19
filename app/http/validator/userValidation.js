@@ -1,9 +1,17 @@
-let {body} = require('express-validator');
+let {body,check} = require('express-validator');
 const Validator = require('./validator');
 
 const userModel = require('../../models/user');
 
 class userValidation extends Validator{
+    checkRefreshToken(){
+        return[
+            body('refreshToken')
+                .notEmpty()
+                    .withMessage('توکن بازیابی یافت نشد.')
+        ]
+    }
+    
     checkRegister(){
         return[
             body('name')
@@ -79,6 +87,8 @@ class userValidation extends Validator{
             
         ]
     }
+
+    
 }
 
 module.exports = new userValidation;

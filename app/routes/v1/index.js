@@ -1,12 +1,16 @@
 // API version 1 routes
-
 let router = require('express').Router();
 
+// Routes
 let privateRoutes = require('./private');   // For users
 let publicRoutes = require('./public');     // For everyone
 let authenticationRoutes = require('./auth');
 
-router.use(privateRoutes);
+// Midlleware
+const authenticateApi = require('../../http/middleware/authenticateApi');
+
+
+router.use('/private',authenticateApi.handle,privateRoutes);
 router.use(publicRoutes);
 router.use('/auth',authenticationRoutes);
 

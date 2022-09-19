@@ -6,7 +6,7 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 let opts = {
     jwtFromRequest : ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: configs.jwt.secret
+    secretOrKey: configs.jwt.accessTokenSecret
 };
 
 passport.use('jwt',new JwtStrategy(opts,(jwt_payload,done)=>{
