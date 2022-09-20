@@ -2,6 +2,7 @@ const database = require('./database');
 const session = require('./session');
 
 module.exports = {
+    applicationName : 'InstaHelper',
     port : process.env.APPLICATION_PORT,
     host: process.env.APPLICATION_HOST,
     database,

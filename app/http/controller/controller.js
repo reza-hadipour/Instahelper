@@ -1,11 +1,21 @@
 const autoBind = require('auto-bind');
 const {validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
+const redis = require('redis');
+const JWTR = require('jwt-redis').default;
+
 const { randomNumberGenerator } = require('../../../helpers');
 
 class Controller {
     constructor(){
         autoBind(this);
+        this.setupRedis();
+    }
+
+    async setupRedis(){
+        this.redisClient = redis.createClient({url: configs.database.redis.url});
+        await this.redisClient.connect();
+        this.jwtr = new JWTR(this.redisClient,{prefix: `${configs.applicationName}:RefreshToken:`});
     }
 
     createOtp(){
@@ -15,12 +25,14 @@ class Controller {
         }
     }
 
-    createRefreshTokne(userId){
-        return jwt.sign({userId},configs.jwt.refreshTokenSecret,{expiresIn: "1y"});
+    async createRefreshTokne(user){
+        let {mobile,id} = user;
+        var payload = {jti: mobile, userId:id};
+        return await this.jwtr.sign(payload,configs.jwt.refreshTokenSecret, {expiresIn: "1y"});
     }
 
     createTokne(userId){
-        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 10000});
+        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 30});
     }
 
     errorResponse(error,res){

@@ -47,7 +47,7 @@ class Application{
     }
 
     setMongoConnection(){
-        mongoose.connect(configs.database.url)
+        mongoose.connect(configs.database.mongodb.url)
             .then(()=>debugDB('Connected to MongoDB Succesfully'))
             .catch(err=>debugDB(err));
     }

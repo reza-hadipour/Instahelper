@@ -41,14 +41,7 @@ router.post('/login/otp', checkOtp(), loginController.checkOtp);
 router.post('/register',checkRegister(),registerController.regiser)
 
 // Logout
-router.get('/logout',authenticateApi.handle, async (req,res,next)=>{
-    let user = req.user;
-    user.refreshToken = null;
-    await user.save();
+router.get('/logout', authenticateApi.handle, loginController.logOut);
 
-    res.json({
-        status: 'success'
-    })
-})
 
 module.exports = router;

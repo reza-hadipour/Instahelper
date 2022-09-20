@@ -7,9 +7,13 @@ const { normalizeData } = require("../../../../helpers");
 
 // Models
 const userModel = require('../../../models/user');
-
+const configs = require("../../../../configs");
 
 class loginController extends Controller{
+    constructor(){
+        super();
+    }
+
     async login(req,res,next){
         if(!await this.validationData(req)){
             return this.errorResponse(createHttpError.BadRequest(req.errors),res)
@@ -25,11 +29,11 @@ class loginController extends Controller{
 
             ////// >>>>>>>>>>>>> Create Token
             let accessToken = this.createTokne(user.id);
-            let refreshToken = this.createRefreshTokne(user.id);
+            let refreshToken = await this.createRefreshTokne(user);
 
             // Store Refresh Token in User
-            user.refreshToken = refreshToken;
-            await user.save();
+            // user.refreshToken = refreshToken;
+            // await user.save();
 
             return res.json({
                 status: "success",
@@ -48,6 +52,15 @@ class loginController extends Controller{
         } catch (error) {
             next(createHttpError.BadRequest(error.message));
         }
+    }
+
+    async logOut(req,res,next){
+        let result = await this.jwtr.destroy(req.user.mobile)
+        
+        res.json({
+            status: 'success',
+            safeLogOut : result
+        });
     }
 
     async resendOtp(req,res,next){
@@ -84,22 +97,26 @@ class loginController extends Controller{
         try {
             let {refreshToken} = req.body;
 
-            jwt.verify(refreshToken,configs.jwt.refreshTokenSecret,async (err,decoded)=>{
-                if(err) return this.errorResponse(createHttpError.BadRequest('توکن نامعتبر است.'),res);
-                let user = await userModel.findOne({refreshToken});
+            this.jwtr.verify(refreshToken,configs.jwt.refreshTokenSecret)
+                .then(async (decoded)=>{
+                    console.log(decoded);
+                    let user = await userModel.findById(decoded.userId);
                 
-                if(!user) return this.errorResponse(createHttpError.NotFound('کاربر یافت نشد.'),res);
+                    if(!user) return this.errorResponse(createHttpError.NotFound('کاربر یافت نشد.'),res);
 
-                ////// >>>>>>>>>>>>> Create Token
-                let accessToken = this.createTokne(user.id);
-                refreshToken = this.createRefreshTokne(user.id);
+                    let accessToken = this.createTokne(user.id);
 
-                return res.json({
-                    status: "success",
-                    accessToken
+                    return res.json({
+                        status: "success",
+                        accessToken
+                    });
+
+                })
+                .catch(err=>{
+                    console.log('invalid token');
+                    if(err) return this.errorResponse(createHttpError.BadRequest('توکن نامعتبر است.'),res);
                 });
 
-            })
         } catch (error) {
             next(error);
         }
@@ -148,17 +165,14 @@ class loginController extends Controller{
                 return this.errorResponse(createHttpError.Unauthorized('کد یکبارمصرف شما منقضی شده است.'),res);
             }
 
-            await this.clearOtp(user);
-
-            
+            await this.clearOtp(user);            
 
             ////// >>>>>>>>>>>>> Create Token
             let accessToken = this.createTokne(user.id)
-            let refreshToken = this.createRefreshTokne(user.id);
+            let refreshToken = await this.createRefreshTokne(user);
 
             // Verify the user account and store refreshToken
             user.verifyed = true;
-            user.refreshToken = refreshToken;
             await user.save();
 
             return res.json({
@@ -206,6 +220,8 @@ class loginController extends Controller{
         const updateResult = await userModel.updateOne({mobile},{$set: {otp: data}});
         return !!updateResult.modifiedCount;
     }
+
+    
 
 }
 
