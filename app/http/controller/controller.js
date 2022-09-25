@@ -14,7 +14,16 @@ class Controller {
 
     async setupRedis(){
         this.redisClient = redis.createClient({url: configs.database.redis.url});
-        await this.redisClient.connect();
+        this.redisClient.connect()
+            .then(()=>{
+                debugRedis('Redis is ready to use.')
+            })
+            .catch(err=>{
+                if(err) {
+                    debugRedis(err);
+                    process.exit(0);
+                }
+            });
         this.jwtr = new JWTR(this.redisClient,{prefix: `${configs.applicationName}:RefreshToken:`});
     }
 

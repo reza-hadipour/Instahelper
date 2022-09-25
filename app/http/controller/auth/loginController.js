@@ -56,6 +56,7 @@ class loginController extends Controller{
 
     async logOut(req,res,next){
         let result = await this.jwtr.destroy(req.user.mobile)
+        this.redisClient.SCAN()
         
         res.json({
             status: 'success',

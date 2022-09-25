@@ -12,7 +12,8 @@ const expressSession = require('express-session');
 
 // Set Debug
 debug = require('debug')('instaHelper:app');
-debugDB = require('debug')('instaHelper:database');
+debugDB = require('debug')('instaHelper:MongoDB');
+debugRedis= require('debug')('instaHelper:Redis');
 
 const {normalizePort} = require('../helpers');
 

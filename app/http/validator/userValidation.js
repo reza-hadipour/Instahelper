@@ -1,5 +1,6 @@
-let {body,check} = require('express-validator');
+let {body,check, param} = require('express-validator');
 const Validator = require('./validator');
+const jwt = require('jsonwebtoken');
 
 const userModel = require('../../models/user');
 
@@ -85,6 +86,42 @@ class userValidation extends Validator{
                     .withMessage('رمبز عبور را وارد کنید.')
                 
             
+        ]
+    }
+    
+    checkSendResetPassword(){
+        return [
+            body('email')
+                .isEmail()
+                    .withMessage('ایمیل را وارد کنید.')
+        ]
+    }
+
+    checkResetPassword(){
+        return [
+            param('resetToken')
+                .custom((resetToken)=>{
+                    console.log('REset TOken:', resetToken);
+                    jwt.verify(resetToken,configs.jwt.resetPassSecret,async (err)=>{
+                        if(err) {
+                            console.log('Error in validation');
+                            throw new Error('Invalid Token');
+                        }
+                    })
+            }),
+            body('newPassword')
+            .notEmpty()
+                .withMessage('رمز ورود را وارد کنید.')
+            .isLength({min:8})
+                .withMessage('طول رمزعبور باید حداقل 8 کاراکتر باشد.')
+            .matches('[0-9]')
+                .withMessage('رمزعبور باید دارای حداقل یک عدد باشد.')
+            .matches('[A-Z]')
+                .withMessage('رمزعبور باید دارای حروف بزرگ باشد.')
+            .matches('[a-z]')
+                .withMessage('رمزعبور باید دارای حروف کوچک باشد.')
+            .matches('[ !"#$%&\'()*+,\-./:;<=>?@[\\\]^_`{|}~]')
+                .withMessage('رمزعبور باید شامل حداقل یک کاراکتر خاص (!@#$%^&*) باشد.'),
         ]
     }
 

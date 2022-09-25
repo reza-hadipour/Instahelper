@@ -8,7 +8,8 @@ module.exports = {
     database,
     jwt: {
         accessTokenSecret : process.env.ACCESS_SECRET_KEY,
-        refreshTokenSecret : process.env.REFRESH_SECRET_KEY
+        refreshTokenSecret : process.env.REFRESH_SECRET_KEY,
+        resetPassSecret : process.env.RESETPASS_SECRET_KEY
     },
     session
 }

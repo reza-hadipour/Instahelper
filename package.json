@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "debug": "@powershell $env:DEBUG='instaHelper:app,instaHelper:database,-express:router*' ; npm start"
+    "debug": "@powershell $env:DEBUG='instaHelper:app,instaHelper:MongoDB,instaHelper:Redis,-express:router*' ; npm start"
   },
   "dependencies": {
     "app-module-path": "^2.2.0",

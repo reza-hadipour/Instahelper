@@ -5,6 +5,7 @@ const passport = require('passport');
 // Controllers
 const registerController = require('../../http/controller/auth/registerController');
 const loginController = require('../../http/controller/auth/loginController');
+const resetPassword = require('../../http/controller/auth/resetPassword');
 
 // Middleware
 const authenticateApi = require('../../http/middleware/authenticateApi');
@@ -13,7 +14,7 @@ const authenticateApi = require('../../http/middleware/authenticateApi');
 const userModel = require('../../models/user');
 
 // Validators
-const {checkRegister, checkGetOtp, checkOtp, checkLogin, checkRefreshToken} = require('../../http/validator/userValidation');
+const {checkRegister, checkGetOtp, checkOtp, checkLogin, checkRefreshToken, checkResetPassword, checkSendResetPassword} = require('../../http/validator/userValidation');
 
 
 // Login    using email & password - recieve Token
@@ -42,6 +43,10 @@ router.post('/register',checkRegister(),registerController.regiser)
 
 // Logout
 router.get('/logout', authenticateApi.handle, loginController.logOut);
+
+// ResetPassword
+router.post('/resetPassword', checkSendResetPassword() ,resetPassword.createResetPassword);
+router.put('/resetPassword/:resetToken', checkResetPassword(), resetPassword.resetPassword);
 
 
 module.exports = router;
