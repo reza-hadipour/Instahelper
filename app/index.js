@@ -9,6 +9,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const passport = require('passport');
 const expressSession = require('express-session');
+const redis = require('redis');
+
 
 // Set Debug
 debug = require('debug')('instaHelper:app');
@@ -31,6 +33,7 @@ class Application{
         console.log('DEBUG is', process.env.DEBUG);
         this.setupExpress();
         this.setMongoConnection();
+        this.setupRedis();
         this.setConfigs();
         this.setSwagger();
         this.setRoutes();
@@ -51,6 +54,23 @@ class Application{
         mongoose.connect(configs.database.mongodb.url)
             .then(()=>debugDB('Connected to MongoDB Succesfully'))
             .catch(err=>debugDB(err));
+    }
+
+    setupRedis(){
+        this.redisClient = redis.createClient({url: configs.database.redis.url});
+        this.redisClient.connect()
+            .then(()=>{
+                debugRedis('Redis is ready to use.');
+            });
+
+        this.redisClient.on('error',(err=>{
+            if(err['code'] === 'ECONNREFUSED'){
+                debugRedis(`Redis server is not available.\t Address: ${err['address']}\t Port: ${err['port']}`);
+            }else{
+                debugRedis(err['message']);
+            }
+            process.exit(0);
+        }));
     }
 
     setConfigs(){

@@ -1,7 +1,6 @@
 const autoBind = require('auto-bind');
 const {validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
-const redis = require('redis');
 const JWTR = require('jwt-redis').default;
 
 const { randomNumberGenerator } = require('../../../helpers');
@@ -13,17 +12,6 @@ class Controller {
     }
 
     async setupRedis(){
-        this.redisClient = redis.createClient({url: configs.database.redis.url});
-        this.redisClient.connect()
-            .then(()=>{
-                debugRedis('Redis is ready to use.')
-            })
-            .catch(err=>{
-                if(err) {
-                    debugRedis(err);
-                    process.exit(0);
-                }
-            });
         this.jwtr = new JWTR(this.redisClient,{prefix: `${configs.applicationName}:RefreshToken:`});
     }
 
