@@ -32,4 +32,135 @@ components:
                   message:
                     type: string
                     example: "صفحه مورد نظر یافت نشد."
-    
+    400BadRequestRegister:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: Integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                              "نام را وارد کنید.",
+                              "ایمیل را وارد کنید.",
+                              "ایمیل وارد شده تکراری است",
+                              "رمز ورود را وارد کنید.",
+                              "طول رمزعبور باید حداقل 8 کاراکتر باشد.",
+                              "رمزعبور باید دارای حداقل یک عدد باشد.",
+                              "رمزعبور باید دارای حروف بزرگ باشد.",
+                              "رمزعبور باید دارای حروف کوچک باشد.",
+                              "رمزعبور باید شامل حداقل یک کاراکتر خاص (!@#$%^&*) باشد.",
+                              "فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789"
+                            ]
+    400BadRequestLogin:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                              "ایمیل را وارد کنید.",
+                              "رمز ورود را وارد کنید."
+                            ]
+    400BadRequestCheckOTP:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                              "ایمفرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789.",
+                              "رمز یکبار مصرف را وارد کنید."
+                            ]
+    401UnauthorizedLogin:
+      description: "Not verifyed"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 401
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "حساب کاربری تایید نشده است. مجدد درخواست ارسال کد یکبارمصرف را بدهید."      
+    404UserNotFound:
+      description: "Not found"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 404
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "اطلاعات وارد شده صحیح نمی باشد."
+    408ExpireOTP:
+      description: "OTP Code is expired"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "کد یکبارمصرف شما منقضی شده است."
+

@@ -3,3 +3,5 @@ tags:
     description: "All routes about users."
   - name: "Admin API"
     description: "Most of private routes"
+  - name: "Authentication"
+    description: "Register,Login,RefreshToken"

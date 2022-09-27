@@ -2,7 +2,7 @@
 let router = require('express').Router();
 
 // Routes
-let privateRoutes = require('./private');   // For users
+let adminRoutes = require('./admin');   // For users
 let publicRoutes = require('./public');     // For everyone
 let authenticationRoutes = require('./auth');
 
@@ -10,7 +10,7 @@ let authenticationRoutes = require('./auth');
 const authenticateApi = require('../../http/middleware/authenticateApi');
 
 
-router.use('/private',authenticateApi.handle,privateRoutes);
+router.use('/admin',authenticateApi.handle,adminRoutes);
 router.use(publicRoutes);
 router.use('/auth',authenticationRoutes);
 

@@ -1,0 +1,177 @@
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: "register new user using email"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                    type: string
+                    example: user@InstaHelper.ir
+                password:
+                  type: string
+                  example: EX@mpl3P@$$w0rD
+
+      responses:
+        200:
+          description: 'user logined successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Success
+                  Tokens:
+                    type: object
+                    properties:
+                      accessToken,:
+                        type: string
+                        example: 8n83u4bv8yu3bn438nd3yb34byf83uy8f38
+                      refreshToken:
+                        type: string
+                        example: ns187by28bd1n7b8TV6TVB866RTC5V7ec54
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 131f1a1f1243c12e
+                      name:
+                        type: string
+                        example: Reza
+                      family:
+                        type: string
+                        example: Hadipour
+                      email:
+                        type: string
+                        example: user@InstaHelper.ir
+        404:
+          $ref: '#/components/responses/404UserNotFound'
+        401:
+          $ref: '#/components/responses/401UnauthorizedLogin'
+        400:
+          $ref: '#/components/responses/400BadRequestLogin'
+
+  /auth/login/otp:
+    post:
+      tags: [Authentication]
+      summary: "Enter OTP Code to verify the account"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - mobile
+                - code
+              properties:
+                mobile:
+                    type: string
+                    example: "+989123456789"
+                code:
+                  type: string
+                  example: 123456
+
+      responses:
+        200:
+          description: 'New Account has been verified'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Success
+                  Tokens:
+                    type: object
+                    properties:
+                      accessToken,:
+                        type: string
+                        example: 8n83u4bv8yu3bn438nd3yb34byf83uy8f38
+                      refreshToken:
+                        type: string
+                        example: ns187by28bd1n7b8TV6TVB866RTC5V7ec54
+        401:
+          $ref: '#/components/responses/401UnauthorizedLogin'
+        400:
+          $ref: '#/components/responses/400BadRequestCheckOTP'
+        404:
+          $ref: '#/components/responses/404UserNotFound'
+        408:
+          $ref: '#/components/responses/408ExpireOTP'
+
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: "register new user using email"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+                - family
+                - email
+                - password
+                - mobile
+              properties:
+                name:
+                  type: string
+                  example: Reza
+                family:
+                  type: string
+                  example: Hadipour
+                email:
+                    type: string
+                    example: user@InstaHelper.ir
+                password:
+                  type: string
+                  example: EX@mpl3P@$$w0rD
+                mobile:
+                  type: string
+                  example: +989123456789
+      responses:
+        200:
+          description: 'New user registered successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Success
+                  user:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Reza
+                      family:
+                        type: string
+                        example: hadipour
+                      email:
+                        type: string
+                        example: user@InstaHelper.ir
+                      mobile:
+                        type: string
+                        example: "+989123456789"
+                      code:
+                        type: string
+                        example: 377896
+                  message:
+                    type: string
+                    example: "Verify the user mobile number in .../auth/login/otp"
+        400:
+          $ref: '#/components/responses/400BadRequestRegister'

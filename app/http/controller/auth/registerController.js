@@ -13,7 +13,8 @@ class registerController extends Controller{
             return this.errorResponse(createHttpError.BadRequest(req.errors),res)
         }
 
-        let user = new userModel(req.body);
+        try {
+            let user = new userModel(req.body);
             user.password = user.hashPassword(user.password);
             user.otp = this.createOtp();
             user.save(err=>{
@@ -31,11 +32,14 @@ class registerController extends Controller{
                         family : user.family,
                         email : user.email,
                         mobile: user.mobile,
-                        code: otp.code
+                        code: user.otp.code
                     },
                     message: 'Verify the user mobile number in .../auth/login/otp'
                 });
             });
+        } catch (error) {
+            next(error);
+        }
     }
 
 

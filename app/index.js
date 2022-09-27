@@ -10,6 +10,12 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const passport = require('passport');
 const expressSession = require('express-session');
 const redis = require('redis');
+const cors = require('cors');
+
+
+
+// // Set RedicClient in global
+// myRedisClient = {};
 
 
 // Set Debug
@@ -18,9 +24,6 @@ debugDB = require('debug')('instaHelper:MongoDB');
 debugRedis= require('debug')('instaHelper:Redis');
 
 const {normalizePort} = require('../helpers');
-
-// Routes
-const allRoutes = require('./routes');
 
 const port = normalizePort(configs.port || '3000');
 app.set('port',port);
@@ -55,15 +58,16 @@ class Application{
             .then(()=>debugDB('Connected to MongoDB Succesfully'))
             .catch(err=>debugDB(err));
     }
-
+    
     setupRedis(){
-        this.redisClient = redis.createClient({url: configs.database.redis.url});
-        this.redisClient.connect()
+        global.myRedisClient = redis.createClient({url: configs.database.redis.url});
+        myRedisClient.connect()
             .then(()=>{
                 debugRedis('Redis is ready to use.');
+                myRedisClient.set('test','test123',{EX: 10000000});
             });
 
-        this.redisClient.on('error',(err=>{
+        myRedisClient.on('error',(err=>{
             if(err['code'] === 'ECONNREFUSED'){
                 debugRedis(`Redis server is not available.\t Address: ${err['address']}\t Port: ${err['port']}`);
             }else{
@@ -83,11 +87,11 @@ class Application{
         app.use(express.static(path.join(__dirname,'public')));
         app.use(passport.initialize());
         app.use(passport.session());
+        app.use(cors());
 
     }
 
     setSwagger(){
-
         let swaggerOptions = swaggerJsDoc({
             swaggerDefinition:{
                 openapi : '3.0.0',
@@ -109,7 +113,6 @@ class Application{
             },
             apis : [path.join(__dirname,'..','swagger','*.yaml')]
         });
-
         app.use('/api-doc',swaggerUi.serve,swaggerUi.setup(swaggerOptions,{explorer:true}));
     }
 
@@ -119,13 +122,12 @@ class Application{
             compress: 'gzip',
             path: path.join(__dirname,'log')
         });
-
         app.use(logger('combined',{stream: accessLogStream}));
         app.use(logger('dev'));
     }
 
     setRoutes(){
-        app.use(allRoutes);
+        app.use(require('./routes'));
     }
 
     onListening() {

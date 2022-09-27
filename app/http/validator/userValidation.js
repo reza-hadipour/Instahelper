@@ -18,6 +18,9 @@ class userValidation extends Validator{
             body('name')
                 .notEmpty()
                     .withMessage('نام را وارد کنید.'),
+            body('family')
+                .notEmpty()
+                    .withMessage('نام خانوادگی را وارد کنید.'),
             body('email')
                 .isEmail()
                     .withMessage('ایمیل را وارد کنید.')
@@ -48,6 +51,8 @@ class userValidation extends Validator{
                 .matches('[ !"#$%&\'()*+,\-./:;<=>?@[\\\]^_`{|}~]')
                     .withMessage('رمزعبور باید شامل حداقل یک کاراکتر خاص (!@#$%^&*) باشد.'),
             body('mobile')
+                .notEmpty()
+                    .withMessage('شماره موبایل را وارد کنید.')
                 .matches('^(\\+{1})(\\d{12})$')
                     .withMessage('فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789')
                 .custom(async (value)=>{
