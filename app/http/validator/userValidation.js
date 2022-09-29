@@ -105,14 +105,11 @@ class userValidation extends Validator{
     checkResetPassword(){
         return [
             param('resetToken')
-                .custom((resetToken)=>{
-                    console.log('REset TOken:', resetToken);
-                    jwt.verify(resetToken,configs.jwt.resetPassSecret,async (err)=>{
-                        if(err) {
-                            console.log('Error in validation');
-                            throw new Error('Invalid Token');
-                        }
-                    })
+                .custom(async (resetToken)=>{
+                    let result = await jwt.verify(resetToken,configs.jwt.resetPassSecret);
+                    if(!result){
+                        throw new Error('توکن نامعتبر است.');
+                    }
             }),
             body('newPassword')
             .notEmpty()

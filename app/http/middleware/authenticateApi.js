@@ -7,9 +7,9 @@ class authenticateApi{
             if(err || !user){
                 let response = createHttpError.Unauthorized('اجازه دسترسی ندارید.');
                 return res.status(response.statusCode).json({
-                    status : false,
+                    status : "failed",
                     Error: {
-                        response,
+                        message : response.message,
                         info
                     }
                 })

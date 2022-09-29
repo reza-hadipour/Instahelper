@@ -58,7 +58,7 @@ class loginController extends Controller{
 
     async logOut(req,res,next){
         let result = await this.jwtr.destroy(req.user.mobile)
-        this.redisClient.SCAN()
+        // this.myRedisClient.SCAN()
         
         res.json({
             status: 'success',
@@ -75,7 +75,7 @@ class loginController extends Controller{
 
         let user = await userModel.findOne({mobile});
     
-        if(!user) return this.errorResponse(createHttpError.Unauthorized('اطلاعات وارد شده صحیح نمی باشد.'),res); 
+        if(!user) return this.errorResponse(createHttpError.NotFound('اطلاعات وارد شده صحیح نمی باشد.'),res); 
 
         let otp = this.createOtp();
         this.storeOtp(user,otp);
@@ -113,7 +113,7 @@ class loginController extends Controller{
 
                 })
                 .catch(err=>{
-                    if(err) return this.errorResponse(createHttpError.BadRequest('توکن نامعتبر است.'),res);
+                    if(err) return this.errorResponse(createHttpError.Unauthorized('توکن نامعتبر است.'),res);
                 });
 
         } catch (error) {
@@ -134,7 +134,7 @@ class loginController extends Controller{
             let otp = this.createOtp();
             const result = await this.#saveUser(mobile,otp);
             
-            if(!result) throw createHttpError.BadRequest('ورود شما با خطا مواجه شد.');
+            if(!result) throw createHttpError.InternalServerError('ورود شما با خطا مواجه شد.');
 
             ////// >>>>>>>>>>  SEND SMS FUNCTION  <<<<<<<<<<<<<<<<  ///////
 
@@ -146,7 +146,7 @@ class loginController extends Controller{
             });
 
         } catch (error) {
-            next(createHttpError.BadRequest(error.message));
+            next(createHttpError.InternalServerError(error.message));
         }
     }
 
@@ -228,11 +228,11 @@ class loginController extends Controller{
     async #createRefreshTokne(user){
         let {mobile,id} = user;
         var payload = {jti: mobile, userId:id};
-        return await this.jwtr.sign(payload,configs.jwt.refreshTokenSecret,{expiresIn : "1y"});
+        return await this.jwtr.sign(payload,configs.jwt.refreshTokenSecret,{expiresIn : "365 days"});
     }
 
     #createTokne(userId){
-        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 30});
+        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 300});
     }
 
     #setupJWTR(){

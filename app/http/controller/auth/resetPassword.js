@@ -23,7 +23,8 @@ class resetPassword extends Controller {
         await resetPassword.save();
         return res.json({
             status: 'Success',
-            resetTokenLink : `${configs.host}:${configs.port}/auth/resetPassword/${resetToken}`
+            // resetTokenLink : `${configs.host}:${configs.port}/auth/resetPassword/${resetToken}`
+            resetToken
         })
     }
 
@@ -36,13 +37,12 @@ class resetPassword extends Controller {
         let {newPassword} = req.body;
 
         let resetPass = await resetPasswordModel.findOne({resetToken});
-        if(!resetPass) { return this.errorResponse({Error: 'Your token is used once.'},res)};
+        if(!resetPass) { return this.errorResponse(createHttpError.Unauthorized('این توکن قبلا استفاده شده است.'),res)};
         
         jwt.verify(resetToken,configs.jwt.resetPassSecret,async (err,decoded)=>{
             if(err) {
-                return this.errorResponse(createHttpError.BadRequest('Invalid Token'),res);
+                return this.errorResponse(createHttpError.Unauthorized('توکن نامعتبر است.'),res);
             }
-
 
             let {userId} = decoded;
             let user = await userModel.findById(userId);
@@ -51,10 +51,13 @@ class resetPassword extends Controller {
             await user.save();
 
             resetPasswordModel.deleteOne({resetToken},(err,result)=>{
-                return res.json({
-                    status: 'success',
-                    delete: result
-                })
+                if(result.deletedCount == 1){
+                    return res.json({
+                        status: 'success',
+                        message: "رمز شما با موفقیت تغییر پیدا کرد."
+                    })
+                }
+                
             })
         });
     }

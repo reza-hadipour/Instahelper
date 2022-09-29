@@ -5,3 +5,5 @@ tags:
     description: "Most of private routes"
   - name: "Authentication"
     description: "Register,Login,RefreshToken"
+  - name: "Reset Password"
+    description: "Functions to reset forgoten password"

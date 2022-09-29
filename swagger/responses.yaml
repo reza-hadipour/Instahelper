@@ -163,4 +163,144 @@ components:
                   message:
                     type: string
                     example: "کد یکبارمصرف شما منقضی شده است."
-
+    401Unauthorized:
+      description: "Unauthorized login"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "اجازه دسترسی ندارید."
+    401InvalidToken:
+      description: "Invalid Token"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "توکن نامعتبر است."
+    400BadRequestGetOTP:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                      "فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789."
+                            ]
+    400BadRequestRefreshToken:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                      "توکن بازیابی یافت نشد."
+                            ]
+    400BadRequestResetPassword:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                      "ایمیل را وارد کنید."
+                            ]
+    400BadRequestResetPasswordAction:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: integer
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: [
+                      "توکن نامعتبر است.",
+                      "رمز ورود را وارد کنید.",
+                      "طول رمزعبور باید حداقل 8 کاراکتر باشد.",
+                      "رمزعبور باید دارای حداقل یک عدد باشد.",
+                      "رمزعبور باید دارای حروف بزرگ باشد.",
+                      "رمزعبور باید دارای حروف کوچک باشد.",
+                      "رمزعبور باید شامل حداقل یک کاراکتر خاص (!@#$%^&*) باشد."
+                            ]
+    401InvalidTokenResetPassword:
+      description: "Invalid Token"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "Failed"
+              statusCode:
+                type: intiger
+                example: 401
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "این توکن قبلا استفاده شده است."

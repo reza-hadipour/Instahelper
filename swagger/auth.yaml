@@ -1,8 +1,184 @@
 paths:
+
+  /admin:
+    get:
+      tags: ["Admin API"]
+      security: [{BearerAuth: []}]
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+
+  /auth/refreshtoken:
+    post:
+      tags: [Authentication]
+      summary: "Get new AccessToken using RefreshToken"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIrOTg5Mzg0NDgzOTcyIiwidXNlcklkIjoiNjMyODMwY2QwYjBiMzhmNzliODA1MDQ3IiwiaWF0IjoxNjY0NDQxNzM2LCJleHAiOjE2OTU5Nzc3MzZ9.uWg2fwPR0M1rSBnPMED6brhRZUC5882-HboGP0KuxoY"
+      responses:
+        400:
+          $ref: '#/components/responses/400BadRequestRefreshToken'
+        404:
+          $ref: '#/components/responses/404UserNotFound'
+        401:
+          $ref: '#/components/responses/401InvalidToken'
+        200:
+          description: "Receive new Access Token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzI4MzBjZDBiMGIzOGY3OWI4MDUwNDciLCJpYXQiOjE2NjQ0NDE3MzYsImV4cCI6MTY2NDQ0MjAzNn0.rql58Y24Yayg2wFbKNm5nweCk30_du46stCyFt1M-TY"
+
+  /auth/resendOtp:
+    post:
+      tags: [Authentication]
+      summary: "Resend OTP Code"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - mobile
+              properties:
+                mobile:
+                  type: string
+                  example: "+989123456789"
+      responses:
+        200:
+          description: "Generate OTP successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  mobile:
+                    type: string
+                    example: "+989123456789"
+                  code:
+                    type: string
+                    example: 331462
+                  message:
+                    type: string
+                    example: "کد یکبار مصرف برای شما ارسال شد."
+        400:
+          $ref: '#/components/responses/400BadRequestGetOTP'
+        404:
+          $ref: '#/components/responses/404UserNotFound'
+
+  /auth/login/getotp:
+    post:
+      tags: [Authentication]
+      summary: "Login using OTP - Step 1 - recieving code"
+      description: "It could create new user or generate OTP for old user."
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - mobile
+              properties:
+                mobile:
+                  type: string
+                  example: "+989123456789"
+      responses:
+        200:
+          description: "Generate OTP successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  mobile:
+                    type: string
+                    example: "+989123456789"
+                  code:
+                    type: string
+                    example: 331462
+                  message:
+                    type: string
+                    example: "کد یکبار مصرف برای شما ارسال شد."
+        400:
+          $ref: '#/components/responses/400BadRequestGetOTP'
+        500:
+          $ref: '#/components/responses/500Response'  
+
+  /auth/login/otp:
+    post:
+      tags: [Authentication]
+      summary: "Login using OTP - Step 2 - verifying the code"
+      description: "Enter OTP Code to verify the account"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - mobile
+                - code
+              properties:
+                mobile:
+                    type: string
+                    example: "+989123456789"
+                code:
+                  type: string
+                  example: 123456
+
+      responses:
+        200:
+          description: 'New Account has been verified'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Success
+                  Tokens:
+                    type: object
+                    properties:
+                      accessToken,:
+                        type: string
+                        example: 8n83u4bv8yu3bn438nd3yb34byf83uy8f38
+                      refreshToken:
+                        type: string
+                        example: ns187by28bd1n7b8TV6TVB866RTC5V7ec54
+        401:
+          $ref: '#/components/responses/401UnauthorizedLogin'
+        400:
+          $ref: '#/components/responses/400BadRequestCheckOTP'
+        404:
+          $ref: '#/components/responses/404UserNotFound'
+        408:
+          $ref: '#/components/responses/408ExpireOTP'
+
   /auth/login:
     post:
       tags: [Authentication]
-      summary: "register new user using email"
+      summary: "Register new user using email"
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -61,59 +237,10 @@ paths:
         400:
           $ref: '#/components/responses/400BadRequestLogin'
 
-  /auth/login/otp:
-    post:
-      tags: [Authentication]
-      summary: "Enter OTP Code to verify the account"
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              required:
-                - mobile
-                - code
-              properties:
-                mobile:
-                    type: string
-                    example: "+989123456789"
-                code:
-                  type: string
-                  example: 123456
-
-      responses:
-        200:
-          description: 'New Account has been verified'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: Success
-                  Tokens:
-                    type: object
-                    properties:
-                      accessToken,:
-                        type: string
-                        example: 8n83u4bv8yu3bn438nd3yb34byf83uy8f38
-                      refreshToken:
-                        type: string
-                        example: ns187by28bd1n7b8TV6TVB866RTC5V7ec54
-        401:
-          $ref: '#/components/responses/401UnauthorizedLogin'
-        400:
-          $ref: '#/components/responses/400BadRequestCheckOTP'
-        404:
-          $ref: '#/components/responses/404UserNotFound'
-        408:
-          $ref: '#/components/responses/408ExpireOTP'
-
   /auth/register:
     post:
       tags: [Authentication]
-      summary: "register new user using email"
+      summary: "Register new user using email"
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -175,3 +302,26 @@ paths:
                     example: "Verify the user mobile number in .../auth/login/otp"
         400:
           $ref: '#/components/responses/400BadRequestRegister'
+
+  /auth/logout:
+    get:
+      tags: [Authentication]
+      summary: "Logout user"
+      security: [{BearerAuth: []}]
+      responses:
+        200:
+          description: "User logout"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  safeLogout:
+                    type: string
+                    example: "true"
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+  
