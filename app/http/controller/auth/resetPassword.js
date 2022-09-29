@@ -23,7 +23,6 @@ class resetPassword extends Controller {
         await resetPassword.save();
         return res.json({
             status: 'Success',
-            // resetTokenLink : `${configs.host}:${configs.port}/auth/resetPassword/${resetToken}`
             resetToken
         })
     }
