@@ -38,7 +38,7 @@ class Controller {
             if(!result.isEmpty()){
                 let errors=[];
                 result.array().forEach(err =>{
-                    errors.push(err.msg);
+                    errors.push(`${err.param}: ${err.msg}`);
                 });
                 req.errors = errors;
                 resolve(false);

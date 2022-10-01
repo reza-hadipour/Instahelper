@@ -5,13 +5,17 @@ class Validator{
         autoBind(this);
     }
 
-    hasSpecialSymbol(element){
+    hasSpecialSymbol(value){
+        return value.split('').some(this.checkSpecialSymbol);
+    }
+
+    checkSpecialSymbol(element){
         let specialSymbols = [
             ' ', '!', '#', '$', '%', '&',
             "'", '(', ')', '*', '+', ',',
-            '-', '.', '/', ':', ';', '<',
+            '-', '/', ':', ';', '<',
             '=', '>', '?', '@', '[', '\\',
-            ']', '^', '_', '`', '{', '|',
+            ']', '^', '`', '{', '|',
             '}', '~', '"'
           ]
         return specialSymbols.includes(element);
@@ -29,7 +33,10 @@ class Validator{
                 special.test(password)
             );  
     }
-    
+
+    slug(title){
+        return String(title).replace(/([^a-zA-Z0-9آ-ی0-9]|-)+/g,'-');
+    }
 }
 
 module.exports = Validator;

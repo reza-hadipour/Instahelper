@@ -10,7 +10,8 @@ let authenticationRoutes = require('./auth');
 const authenticateApi = require('../../http/middleware/authenticateApi');
 
 
-router.use('/admin',authenticateApi.handle,adminRoutes);
+// router.use('/admin',authenticateApi.handle,adminRoutes);
+router.use('/admin',adminRoutes);
 router.use(publicRoutes);
 router.use('/auth',authenticationRoutes);
 
