@@ -61,6 +61,6 @@ typings/
 .next
 
 # Upload Folder
-#public/upload
+public/upload
 
 kasif.js
