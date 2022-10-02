@@ -60,5 +60,7 @@ typings/
 # next.js build output
 .next
 
+# Upload Folder
+#public/upload
 
 kasif.js
