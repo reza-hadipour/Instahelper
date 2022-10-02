@@ -80,11 +80,11 @@ class Application{
     setConfigs(){
         this.setLogger();
         require('./passport/passport-jwt');
+        app.use(express.static(path.join(__dirname,'..','public')));
         app.use(express.json());
         app.use(express.urlencoded({extended:true}));
         app.use(expressSession({...configs.session}));
         app.use(cookieParser());
-        app.use(express.static(path.join(__dirname,'public')));
         app.use(passport.initialize());
         app.use(passport.session());
         app.use(cors());

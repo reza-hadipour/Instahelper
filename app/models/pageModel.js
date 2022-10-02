@@ -5,7 +5,7 @@ const pageSchema = Schema({
     username: {type:String, require: true, unique: true},
     title: {type: String, require:true},
     description : {type: String},
-    image: {type: String, default : "public/images/pageDef.jpg"},
+    pageimage: {type: String, default : "public/images/pageDef.jpg"},
     instagramURL: {type: String},
     posts: [{type: mongoose.Types.ObjectId, default: null, ref: 'Post'}],
     followers : [{ type: mongoose.Types.ObjectId,default: null, ref: 'User'}],

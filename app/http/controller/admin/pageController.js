@@ -13,8 +13,14 @@ const helpers = require('../../../../helpers');
 class pageController extends Controller{
     async addPage(req,res,next){
         if(!await this.validationData(req)){
-            fs.unlinkSync(req?.file?.path);
+            if(req?.file?.path){    // Remove the file if it was stored
+                fs.unlinkSync(req.file.path);
+            }
             return this.errorResponse(createHttpError.BadRequest(req.errors),res);
+        }
+
+        if(req.file) { // if file was stored, transfer the image path into req.body
+            req.body.pageimage = ((req.file.path).replaceAll('\\','/')).substr(6);
         }
 
         let body = helpers.normalizeData(req.body);

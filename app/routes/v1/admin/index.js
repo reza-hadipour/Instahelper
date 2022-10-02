@@ -1,4 +1,6 @@
 let router = require('express').Router();
+const multer = require('multer');
+// const upload = multer().single('pageimage');
 
 // Controllers
 const pageController = require('../../../http/controller/admin/pageController');
@@ -15,9 +17,9 @@ router.get('/',(req,res,next)=>{
     res.json('Private Routes');
 });
 
-// Page`s stuf
 
-router.post('/addPage', upload.single('PageImage'), addPage(), pageController.addPage);
+// Page routes
+router.post('/addPage', upload.single('pageimage'), addPage(), pageController.addPage);
 router.put('/editPage', pageController.editPage)
 
 module.exports = router;
