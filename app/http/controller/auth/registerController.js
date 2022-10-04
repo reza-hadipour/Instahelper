@@ -27,6 +27,7 @@ class registerController extends Controller{
 
                 res.json({
                     status: "success",
+                    statusCode: 200,
                     user : {
                         name : user.name,
                         family : user.family,

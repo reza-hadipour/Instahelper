@@ -23,6 +23,7 @@ class resetPassword extends Controller {
         await resetPassword.save();
         return res.json({
             status: 'Success',
+            statusCode: 200,
             resetToken
         })
     }
@@ -53,6 +54,7 @@ class resetPassword extends Controller {
                 if(result.deletedCount == 1){
                     return res.json({
                         status: 'success',
+                        statusCode: 200,
                         message: "رمز شما با موفقیت تغییر پیدا کرد."
                     })
                 }

@@ -10,7 +10,7 @@ const authenticateApi = require('../../../http/middleware/authenticateApi');
 const upload = require('../../../http/middleware/uploadImage');
 
 // Validation
-const {addPage} = require('../../../http/validator/pageValidation');
+const {addPage,editPage} = require('../../../http/validator/pageValidation');
 
 
 router.get('/',(req,res,next)=>{
@@ -20,6 +20,6 @@ router.get('/',(req,res,next)=>{
 
 // Page routes
 router.post('/addPage', upload.single('pageimage'), addPage(), pageController.addPage);
-router.put('/editPage', pageController.editPage)
+router.put('/editPage/:id',upload.single('pageimage'), editPage(), pageController.editPage)
 
 module.exports = router;

@@ -39,6 +39,7 @@ class loginController extends Controller{
 
             return res.json({
                 status: "success",
+                statusCode: 200,
                 Tokens:{
                     accessToken,
                     refreshToken
@@ -62,6 +63,7 @@ class loginController extends Controller{
         
         res.json({
             status: 'success',
+            statusCode: 200,
             safeLogOut : result
         });
     }
@@ -84,6 +86,7 @@ class loginController extends Controller{
 
         res.json({
             status: "success",
+            statusCode: 200,
             mobile,
             code : otp.code,
             message : "کد یکبار مصرف برای شما ارسال شد."
@@ -108,6 +111,7 @@ class loginController extends Controller{
 
                     return res.json({
                         status: "success",
+                        statusCode: 200,
                         accessToken
                     });
 
@@ -140,6 +144,7 @@ class loginController extends Controller{
 
             res.json({
                 status: "success",
+                statusCode: 200,
                 mobile,
                 code : otp.code,
                 message : "کد یکبار مصرف برای شما ارسال شد."
@@ -182,6 +187,7 @@ class loginController extends Controller{
 
             return res.json({
                 status: "success",
+                statusCode: 200,
                 Tokens:{
                     accessToken,
                     refreshToken

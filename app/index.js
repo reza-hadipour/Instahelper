@@ -23,7 +23,11 @@ debug = require('debug')('instaHelper:app');
 debugDB = require('debug')('instaHelper:MongoDB');
 debugRedis= require('debug')('instaHelper:Redis');
 
+// Set Consts
+CONSTS = require('../helpers/consts')
+
 const {normalizePort} = require('../helpers');
+const consts = require('../helpers/consts');
 
 const port = normalizePort(configs.port || '3000');
 app.set('port',port);

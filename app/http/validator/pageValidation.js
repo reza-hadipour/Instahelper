@@ -35,6 +35,24 @@ class pageValidation extends Validator{
                 })
         ]
     }
+    editPage(){
+        return[
+            body('pageimage')
+                .custom(async (value,{req}) => {
+                    if(value){
+                        let fileExt = ['.PNG','.JPG','.JPEG','.SVG'];
+                        if(!fileExt.includes(path.extname(req?.body?.pageimage||'').toUpperCase())){
+                            throw new Error('فرمت تصویر ارسالی مجاز نیست. فرمت های قابل قبول: *.png *.jpg *.jpeg *.svg');
+                        }
+                    }
+                    if(req?.file){
+                        if(req?.file?.size >= (1024*1024)){
+                            throw new Error('حجم تصویر نباید از 1 مگابایت بیشتر باشد.');
+                        }
+                    }
+                })
+        ]
+    }
 
     
 }

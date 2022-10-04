@@ -2,10 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const pageSchema = Schema({
+    owner: {type: mongoose.Types.ObjectId, recuired: true, ref: 'User'},
     username: {type:String, require: true, unique: true},
     title: {type: String, require:true},
     description : {type: String},
-    thumb: {type: String, default : "public/images/pageDef.jpg"},
+    thumb: {type: String},
     images : {type: Object},
     instagramURL: {type: String},
     posts: [{type: mongoose.Types.ObjectId, default: null, ref: 'Post'}],

@@ -3,6 +3,8 @@ const {validationResult} = require('express-validator');
 
 const { randomNumberGenerator } = require('../../../helpers');
 
+const isMongoID = require('validator/lib/isMongoId');
+
 class Controller {
     constructor(){
         autoBind(this);
@@ -45,6 +47,13 @@ class Controller {
             }
             resolve(true);
         });
+    }
+
+    isMongoId(mongoId,res){
+        if(!isMongoID(mongoId)){
+            req.errors = "آی دی صفحه معتبر نمی باشد."
+            this.errorResponse(createHttpError.BadRequest(req.errors),res);
+        }
     }
     
 }
