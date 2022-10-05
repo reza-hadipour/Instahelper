@@ -1,5 +1,5 @@
 
 module.exports = {
-    PAGE_DEFAULT_THUBM : "/public/images/pageDef-400.jpg"
+    PAGE_DEFAULT_THUBM : '/images/pageDef-480.jpg'
 }
 

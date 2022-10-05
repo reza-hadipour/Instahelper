@@ -12,9 +12,9 @@ const userSchema = Schema({
         code: 0,
         expiresIn : 0
     }},
-    roles: {type: [String], default:['USER']},
+    roles: [{type: String, default:'USER'}],
     refreshToken: {type: String, default: null},
-    catalogues : {type: [mongoose.Types.ObjectId], ref: "catalogue"},
+    pages : [{type: mongoose.Types.ObjectId, ref: "page"}],
     verifyed : {type: Boolean, default: false}
 },{timestamps: true, toJSON:{virtuals: true}});
 

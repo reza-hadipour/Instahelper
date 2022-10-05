@@ -21,5 +21,7 @@ router.get('/',(req,res,next)=>{
 // Page routes
 router.post('/addPage', upload.single('pageimage'), addPage(), pageController.addPage);
 router.put('/editPage/:id',upload.single('pageimage'), editPage(), pageController.editPage)
+router.delete('/removePage/:id', pageController.removePage)
+router.delete('/removePageImage/:id', pageController.removePageImage)
 
 module.exports = router;

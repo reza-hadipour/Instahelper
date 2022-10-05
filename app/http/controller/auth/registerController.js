@@ -26,8 +26,7 @@ class registerController extends Controller{
                 ////// >>>>>>>>>>>  SEND OTP CODE TO Verify User Mobile
 
                 res.json({
-                    status: "success",
-                    statusCode: 200,
+                    ...this.successPrams(),
                     user : {
                         name : user.name,
                         family : user.family,

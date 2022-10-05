@@ -27,14 +27,14 @@ class pageController extends Controller{
 
         if(req.file) { // if file was stored, transfer the image path into req.body
             // req.body.pageimage = ((req.file.path).replaceAll('\\','/')).substr(6);
-            images = this.imageResize(req.file);
+            images = this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
         }else{
             // Set default images for new page
             let imageSize = [1080,720,480];
             images['original'] = CONSTS.PAGE_DEFAULT_THUBM;
-            imageSize.map(size => images[size] = `/public/images/pageDef-${size}.jpg`);
+            imageSize.map(size => images[size] = `/images/pageDef-${size}.jpg`);
             req.body.images = images;
             req.body.thumb = images['480'];
         }
@@ -47,14 +47,13 @@ class pageController extends Controller{
         newPage.save()
         .then(()=>{
             return res.json({
-                status: 'success',
-                statusCode : 200,
+                ...this.successPrams(),
                 newPage
             })
         })
         .catch(err =>{
-            console.log(err);
-            if(err) return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد صفحه جدید.'),res);
+            // if(err) return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد صفحه جدید.'),res);
+            next(err);
         })
     }
 
@@ -77,7 +76,7 @@ class pageController extends Controller{
         let images = [];
         
         if(req.file) { // if file was stored, transfer the image path into req.body
-            images = this.imageResize(req.file);
+            images = this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
         }
@@ -103,24 +102,81 @@ class pageController extends Controller{
         }else{
             return this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش صفحه.'),res)
         }
+
+        return this.successResponse('صفحه مورد نظر با موفقیت ویرایش شد.',res);
+    }
+
+    async removePage(req,res,next){
+        try {
+            // Check ID
+            this.isMongoId(req?.params?.id);
+    
+            //Find page
+            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id});//.populate('owner').exec();
+            if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
+            
+            // Remove all sub posts in page.posts
+            // page.posts.forEach(async (post)=>{
+                //removePost function
+                //await post.remove();
+                // console.log(`Remove ${post}`);
+            // });
+    
+            // Remove all images
+            if(page.thumb != CONSTS.PAGE_DEFAULT_THUBM){
+                Object.values(page.images).forEach(image=>{
+                    fs.unlinkSync(`./public${image}`)
+                })
+            }
+    
+            // Remove the page
+            let result = await page.remove();
+            return res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async removePageImage(req,res,next){
+        try {
+            // Check ID
+            this.isMongoId(req?.params?.id);
         
-        return res.json({
-            status: 'success',
-            statusCode : 200,
-            message: 'صفحه مورد نظر با موفقیت ویرایش شد.'
-        });
+            //Find page
+            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id});//.populate('owner').exec();
+            if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
+    
+            if(page.thumb != CONSTS.PAGE_DEFAULT_THUBM){
+                Object.values(page.images).forEach(image=>{
+                    fs.unlinkSync(`./public${image}`)
+                })
+            }
+    
+            let images = {}
+    
+            let imageSize = [1080,720,480];
+            images['original'] = CONSTS.PAGE_DEFAULT_THUBM;
+            imageSize.map(size => images[size] = `/images/pageDef-${size}.jpg`);
+    
+            let thumb = images['480'];
+    
+            let result = await page.updateOne({$set : {thumb, images}})
+            return res.json(result);
+        } catch (error) {
+            next(error);
+        }
     }
 
 
-    imageResize(image){
+    #imageResize(image){
         let imageInfo = path.parse(image.path);
         let imageAddress = {}
-        imageAddress['original'] = this.getImageUrl(image.destination,image.filename);
+        imageAddress['original'] = this.#getImageUrl(image.destination,image.filename);
 
         let imageSize = [1080,720,480];
         let resize = size=>{
             let imageName = `${imageInfo.name}-${size}${imageInfo.ext}`;
-            imageAddress[size] = this.getImageUrl(image.destination,imageName);
+            imageAddress[size] = this.#getImageUrl(image.destination,imageName);
 
             sharp(image.path)
                 .resize(size)
@@ -131,7 +187,7 @@ class pageController extends Controller{
         return imageAddress;
     }
 
-    getImageUrl(dir,name){
+    #getImageUrl(dir,name){
         return `${dir.substr(8)}/${name}`;
     }
 }

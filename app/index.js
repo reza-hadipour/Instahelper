@@ -13,10 +13,8 @@ const redis = require('redis');
 const cors = require('cors');
 
 
-
 // // Set RedicClient in global
 // myRedisClient = {};
-
 
 // Set Debug
 debug = require('debug')('instaHelper:app');
@@ -35,7 +33,6 @@ app.set('port',port);
 class Application{
 
     host;
-
     constructor(){
         console.log('DEBUG is', process.env.DEBUG);
         this.setupExpress();
@@ -47,7 +44,6 @@ class Application{
     }
 
     setupExpress(){
-
         let server = app.listen(port,()=>{
             console.log(`Server is running on port ${port}`);
             this.host = server.address().address;
@@ -166,8 +162,6 @@ class Application{
             throw error;
         }
       }
-
-
 }
 
 module.exports = Application;

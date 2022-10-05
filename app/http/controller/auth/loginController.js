@@ -36,10 +36,10 @@ class loginController extends Controller{
             // Store Refresh Token in User
             user.refreshToken = refreshToken;
             await user.save();
+            
 
             return res.json({
-                status: "success",
-                statusCode: 200,
+                ...this.successPrams(),
                 Tokens:{
                     accessToken,
                     refreshToken
@@ -60,10 +60,10 @@ class loginController extends Controller{
     async logOut(req,res,next){
         let result = await this.jwtr.destroy(req.user.mobile)
         // this.myRedisClient.SCAN()
+
         
         res.json({
-            status: 'success',
-            statusCode: 200,
+            ...this.successPrams(),
             safeLogOut : result
         });
     }
@@ -85,8 +85,7 @@ class loginController extends Controller{
         ////// >>>>>>>>>>  SEND SMS FUNCTION  <<<<<<<<<<<<<<<<  ///////
 
         res.json({
-            status: "success",
-            statusCode: 200,
+            ...this.successPrams(),
             mobile,
             code : otp.code,
             message : "کد یکبار مصرف برای شما ارسال شد."
@@ -110,8 +109,7 @@ class loginController extends Controller{
                     let accessToken = this.#createTokne(user.id);
 
                     return res.json({
-                        status: "success",
-                        statusCode: 200,
+                        ...this.successPrams(),
                         accessToken
                     });
 
@@ -143,8 +141,7 @@ class loginController extends Controller{
             ////// >>>>>>>>>>  SEND SMS FUNCTION  <<<<<<<<<<<<<<<<  ///////
 
             res.json({
-                status: "success",
-                statusCode: 200,
+                ...this.successPrams(),
                 mobile,
                 code : otp.code,
                 message : "کد یکبار مصرف برای شما ارسال شد."
@@ -184,10 +181,10 @@ class loginController extends Controller{
             .then(async ()=>{
                 await this.clearOtp(user);  
             })
+            
 
             return res.json({
-                status: "success",
-                statusCode: 200,
+                ...this.successPrams(),
                 Tokens:{
                     accessToken,
                     refreshToken
@@ -238,7 +235,7 @@ class loginController extends Controller{
     }
 
     #createTokne(userId){
-        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 300});
+        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 604800});
     }
 
     #setupJWTR(){

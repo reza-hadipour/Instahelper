@@ -21,9 +21,9 @@ class resetPassword extends Controller {
         
         let resetPassword = new resetPasswordModel({resetToken});
         await resetPassword.save();
+
         return res.json({
-            status: 'Success',
-            statusCode: 200,
+            ...this.successPrams(),
             resetToken
         })
     }
@@ -52,11 +52,7 @@ class resetPassword extends Controller {
 
             resetPasswordModel.deleteOne({resetToken},(err,result)=>{
                 if(result.deletedCount == 1){
-                    return res.json({
-                        status: 'success',
-                        statusCode: 200,
-                        message: "رمز شما با موفقیت تغییر پیدا کرد."
-                    })
+                    return this.successResponse("رمز شما با موفقیت تغییر پیدا کرد.",res);
                 }
                 
             })

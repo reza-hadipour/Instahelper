@@ -34,6 +34,23 @@ class Controller {
         res.status(error.statusCode).json(err);
     }
 
+    successPrams(){
+        return {
+            status: "success",
+            statusCode: 200
+        }
+    }
+
+    successResponse(message,res){
+        let response = {
+            status : 'success',
+            statusCode: 200,
+            message
+        }
+
+        res.status(200).json(response);
+    }
+
     validationData(req){
         return new Promise((resolve)=>{
             let result = validationResult(req);
