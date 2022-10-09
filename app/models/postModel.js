@@ -2,18 +2,15 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const postSchema = Schema({
+    page: {type: mongoose.Types.ObjectId, require: true, ref: 'Page'},
     title: {type: String, require: true},
     slug: {type: String},
     body: {type: String},
-    images: [{type: String, default: '/images/postDef.jpg'}],
-    links : [{
-        url: {type: String},
-        title: {type: String},
-        price: {type: Number}
-    }],
-    page: {type: mongoose.Types.ObjectId, default: null, ref: 'Page'},
+    images: [{type: String}],
+    links : [{type: mongoose.Types.ObjectId , ref: 'postLink'}],
     likes : [{type: mongoose.Types.ObjectId, default: null , ref: 'User'}],
     likeCount : {type: Number, default: 0},
+    viewCount : {type: Number, default: 0},
     comments: [{type: mongoose.Types.ObjectId, default: null, ref: 'Comment'}]
 },{timestamps: true , toJSON: {virtuals: true}});
 

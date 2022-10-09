@@ -1,8 +1,13 @@
 const autoBind = require('auto-bind');
+const isMongoID = require('validator/lib/isMongoId');
+
+//Helpers
+const {slug} = require('../../../helpers');
 
 class Validator{
     constructor(){
         autoBind(this);
+        this.slug = slug;
     }
 
     hasSpecialSymbol(value){
@@ -34,8 +39,10 @@ class Validator{
             );  
     }
 
-    slug(title){
-        return String(title).replace(/([^a-zA-Z0-9آ-ی0-9]|-)+/g,'-');
+
+
+    isMongoId(mongoId){
+        return isMongoID(mongoId);
     }
 }
 

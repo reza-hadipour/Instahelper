@@ -1,0 +1,191 @@
+paths:
+
+  /admin/addpage:
+      post:
+        tags: ['Admin API']
+        summary: "Add new Page"
+        security:
+          - BearerAuth: []
+        requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                required:
+                  - username
+                properties:
+                  username:
+                    type: string
+                    example: "mobile_ir"
+                  title:
+                    type: string
+                    example: "Mobile Center"
+                  description:
+                    type: string
+                    example: "Sell best mobile"
+                  pageimage:
+                    type: string
+                    format: binary
+                  instagramURL:
+                    type: string
+                    example: "mobile_ir"
+                
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            description: "Bad request errors"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 400
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: array
+                          items:
+                            type: string
+                          example: ["username: نام کاربری تکراری است.","username: نام کاربری نمیتواند شامل کاراکترهای خاص باشد. مثال: `~!@#$%^&*?","pageimage: فرمت تصویر ارسالی مجاز نیست. فرمت های قابل قبول: *.png *.jpg *.jpeg *.svg","pageimage: حجم تصویر نباید از 1 مگابایت بیشتر باشد."]
+          200:
+            description: "Create new page successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: "صفحه جدید با موفقیت ساخته شد."
+                    new Page:
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                          example: "mobile_ir"
+                        pageId:
+                          type: string
+                          example: "633d34c1563efa8e7e225377"
+
+  /admin/editpage/{id}:
+    put:
+      tags: ['Admin API']
+      summary: "Edit a Page"
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: "633d34c1563efa8e7e225377"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Mobile Center"
+                description:
+                  type: string
+                  example: "Sell best mobile"
+                pageimage:
+                  type: string
+                  format: binary
+                instagramURL:
+                  type: string
+                  example: "mobile_ir"
+              
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+            $ref: '#/components/responses/404PageNotFound'                  
+        400:
+          description: "Bad request errors"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 400
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: array
+                        items:
+                          type: string
+                        example: ["pageimage: فرمت تصویر ارسالی مجاز نیست. فرمت های قابل قبول: *.png *.jpg *.jpeg *.svg","pageimage: حجم تصویر نباید از 1 مگابایت بیشتر باشد."]
+        200:
+          description: "صفحه جدید با موفقیت ساخته شد."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: integer
+                    example: "200"
+                  message:
+                    type: string
+                    example: "صفحه مورد نظر با موفقیت ویرایش شد."
+
+  /admin/removepageimage/{id}:
+    delete:
+      tags: ['Admin API']
+      summary: "Delete the page image"
+      security: 
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: "633d34c1563efa8e7e225377"
+      responses:
+        410:
+          $ref: '#/components/responses/401Unauthorized'
+        404:
+          $ref: '#/components/responses/404PageNotFound'
+        200:
+          description: "حذف تصویر صفحه"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: integer
+                    example: "200"
+                  message:
+                    type: string
+                    example: "تصویر صفحه مورد نظر با موفقیت پاک شد."

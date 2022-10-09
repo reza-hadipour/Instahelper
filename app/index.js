@@ -25,7 +25,6 @@ debugRedis= require('debug')('instaHelper:Redis');
 CONSTS = require('../helpers/consts')
 
 const {normalizePort} = require('../helpers');
-const consts = require('../helpers/consts');
 
 const port = normalizePort(configs.port || '3000');
 app.set('port',port);

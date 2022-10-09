@@ -28,8 +28,8 @@ class pageValidation extends Validator{
                         }
                     }
                     if(req?.file){
-                        if(req?.file?.size >= (1024*1024)){
-                            throw new Error('حجم تصویر نباید از 1 مگابایت بیشتر باشد.');
+                        if(req?.file?.size >= (CONSTS.PAGE_MAX_FILE_SIZE)){
+                            throw new Error(`حجم تصویر نباید از ${CONSTS.PAGE_MAX_FILE_SIZE/1048576} مگابایت بیشتر باشد.`);
                         }
                     }
                 })
@@ -37,6 +37,14 @@ class pageValidation extends Validator{
     }
     editPage(){
         return[
+            param('id')
+                .notEmpty()
+                    .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
+                .custom(async (pageId,{req})=>{
+                    if(!this.isMongoId(pageId)) throw new Error('آی دی صفحه معتبر نمی باشد.');
+                    let page = await pageModel.findOne({_id:pageId, owner: req.user.id});
+                    if(!page) throw new Error('صفحه مورد نظر پیدا نشد.');
+                }),
             body('pageimage')
                 .custom(async (value,{req}) => {
                     if(value){
@@ -46,8 +54,8 @@ class pageValidation extends Validator{
                         }
                     }
                     if(req?.file){
-                        if(req?.file?.size >= (1024*1024)){
-                            throw new Error('حجم تصویر نباید از 1 مگابایت بیشتر باشد.');
+                        if(req?.file?.size >= (CONSTS.PAGE_MAX_FILE_SIZE)){
+                            throw new Error(`حجم تصویر نباید از ${CONSTS.PAGE_MAX_FILE_SIZE/1048576} مگابایت بیشتر باشد.`);
                         }
                     }
                 })

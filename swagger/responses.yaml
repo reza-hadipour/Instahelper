@@ -304,3 +304,24 @@ components:
                   message:
                     type: string
                     example: "این توکن قبلا استفاده شده است."
+    404PageNotFound:
+        description: "Page not found"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: 'failed'
+                statusCode:
+                  type: string
+                  example: 404
+                Error:
+                  type: object
+                  properties:
+                    message:
+                      type: array
+                      items:
+                        type: string
+                      example: ["صفحه مورد نظر پیدا نشد."]

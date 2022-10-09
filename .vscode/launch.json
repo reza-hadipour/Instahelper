@@ -6,7 +6,7 @@
         "request": "launch",
         "type": "node-terminal",
         "env": {
-            "DEBUG": "instaHelper:database,instaHelper:app"
+            "DEBUG": "instaHelper:database,instaHelper:app,instaHelper:MongoDB,instaHelper:Redis"
         }
     }
     ]

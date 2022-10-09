@@ -48,7 +48,11 @@ class pageController extends Controller{
         .then(()=>{
             return res.json({
                 ...this.successPrams(),
-                newPage
+                message: "صفحه جدید با موفقیت ساخته شد.",
+                newPage: {
+                    username: newPage.username,
+                    pageId: newPage.id
+                }
             })
         })
         .catch(err =>{
@@ -65,13 +69,13 @@ class pageController extends Controller{
             return this.errorResponse(createHttpError.BadRequest(req.errors),res);
         }
 
-        if(req?.params?.id) this.isMongoId(req.params.id,res);
+        // if(req?.params?.id) this.isMongoId(req.params.id,res);
 
         let pageId = req.params.id;
         let owner = req.user.id
 
         let page = await pageModel.findOne({_id:pageId, owner});
-        if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
+        // if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
         
         let images = [];
         
@@ -161,29 +165,33 @@ class pageController extends Controller{
             let thumb = images['480'];
     
             let result = await page.updateOne({$set : {thumb, images}})
-            return res.json(result);
+
+            return res.json({
+                ...this.successPrams(),
+                message: 'تصویر صفحه مورد نظر با موفقیت پاک شد.'
+            });
         } catch (error) {
             next(error);
         }
     }
 
 
-    #imageResize(image){
+    async #imageResize(image){
         let imageInfo = path.parse(image.path);
         let imageAddress = {}
         imageAddress['original'] = this.#getImageUrl(image.destination,image.filename);
 
         let imageSize = [1080,720,480];
-        let resize = size=>{
+        let resize = async (size)=>{
             let imageName = `${imageInfo.name}-${size}${imageInfo.ext}`;
             imageAddress[size] = this.#getImageUrl(image.destination,imageName);
 
-            sharp(image.path)
+            await sharp(image.path)
                 .resize(size)
                 .toFile(`${image.destination}/${imageName}`);
         }
 
-        imageSize.map(resize);
+        await imageSize.map(resize);
         return imageAddress;
     }
 

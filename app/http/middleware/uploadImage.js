@@ -2,8 +2,6 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-const MAX_FILE_SIZE = 1024*1024;
-
 const storage = multer.diskStorage({
     destination: (req,file,cb)=>{
         let dir = getDirPath();
@@ -19,7 +17,24 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req,file,cb)=>{
     let fileExt = ['.PNG','.JPG','.JPEG','.SVG'];
-    req.body.pageimage = file.originalname  // To check file in pageValidation
+    req.body.pageimages = file.originalname  // To check file in pageValidation
+
+    if( ! fileExt.includes(path.extname(file.originalname).toUpperCase())){
+        cb(null,false);
+    }else{
+        cb(null,true);
+    }
+}
+
+const fileFilterArray = (req,file,cb)=>{
+    let fileExt = ['.PNG','.JPG','.JPEG','.SVG'];
+    
+    if(req?.body?.postimage){
+        req.body.postimage[file.originalname] = file.originalname  // To check file in postValidation
+    }else{
+        req.body.postimage = {};
+        req.body.postimage[file.originalname] = file.originalname
+    }
 
     if( ! fileExt.includes(path.extname(file.originalname).toUpperCase())){
         cb(null,false);
@@ -36,13 +51,25 @@ function getDirPath(){
     return `./public/upload/images/${year}/${month}/${day}`;
 }
 
-const upload = multer({
+const uploadPage = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize : 1024*1024 // 1MB + 1 byte
+        fileSize : CONSTS.PAGE_MAX_FILE_SIZE // 1MB + 1 byte
+    }
+});
+
+const uploadPost = multer({
+    storage,
+    fileFilter: fileFilterArray,
+    limits: {
+        fileSize : CONSTS.POST_MAX_FILE_SIZE, // 2MB + 1 byte
+        
     }
 });
 
 
-module.exports = upload;
+module.exports = {
+    uploadPage,
+    uploadPost
+}
