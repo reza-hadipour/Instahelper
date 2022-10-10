@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-//controller
+// controller
 const Controller = require('../controller');
 
 // Models
@@ -13,39 +13,38 @@ const pageModel = require('../../../models/pageModel');
 const helpers = require('../../../../helpers');
 
 'use strict';
-class pageController extends Controller{
-    
-    async addPage(req,res,next){
-        if(!await this.validationData(req)){
-            if(req?.file?.path){    // Remove the file if it was stored
+class pageController extends Controller {
+
+    async addPage(req, res, next) {
+        if (!await this.validationData(req)) {
+            if (req ?. file ?. path) { // Remove the file if it was stored
                 fs.unlinkSync(req.file.path);
             }
-            return this.errorResponse(createHttpError.BadRequest(req.errors),res);
+            return this.errorResponse(createHttpError.BadRequest(req.errors), res);
         }
 
         let images = {};
 
-        if(req.file) { // if file was stored, transfer the image path into req.body
+        if (req.file) {
+            // if file was stored, transfer the image path into req.body
             // req.body.pageimage = ((req.file.path).replaceAll('\\','/')).substr(6);
             images = this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
-        }else{
-            // Set default images for new page
-            let imageSize = [1080,720,480];
+        } else { // Set default images for new page
+            let imageSize = [1080, 720, 480];
             images['original'] = CONSTS.PAGE_DEFAULT_THUBM;
             imageSize.map(size => images[size] = `/images/pageDef-${size}.jpg`);
             req.body.images = images;
             req.body.thumb = images['480'];
         }
-        
+
         req.body.owner = req.user.id;
 
         let body = helpers.normalizeData(req.body);
         let newPage = new pageModel(body);
-        
-        newPage.save()
-        .then(()=>{
+
+        newPage.save().then(() => {
             return res.json({
                 ...this.successPrams(),
                 message: "صفحه جدید با موفقیت ساخته شد.",
@@ -54,19 +53,17 @@ class pageController extends Controller{
                     pageId: newPage.id
                 }
             })
-        })
-        .catch(err =>{
-            // if(err) return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد صفحه جدید.'),res);
+        }).catch(err => { // if(err) return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد صفحه جدید.'),res);
             next(err);
         })
     }
 
-    async editPage(req,res,next){
-        if(!await this.validationData(req)){
-            if(req?.file?.path){    // Remove the file if it was stored
+    async editPage(req, res, next) {
+        if (!await this.validationData(req)) {
+            if (req ?. file ?. path) { // Remove the file if it was stored
                 fs.unlinkSync(req.file.path);
             }
-            return this.errorResponse(createHttpError.BadRequest(req.errors),res);
+            return this.errorResponse(createHttpError.BadRequest(req.errors), res);
         }
 
         // if(req?.params?.id) this.isMongoId(req.params.id,res);
@@ -74,65 +71,68 @@ class pageController extends Controller{
         let pageId = req.params.id;
         let owner = req.user.id
 
-        let page = await pageModel.findOne({_id:pageId, owner});
+        let page = await pageModel.findOne({_id: pageId, owner});
         // if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
-        
+
         let images = [];
-        
-        if(req.file) { // if file was stored, transfer the image path into req.body
+
+        if (req.file) { // if file was stored, transfer the image path into req.body
             images = this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
         }
-        
+
         // prevent edit username
-        if(req?.body?.username) delete req.body['username'];
+        if (req ?. body ?. username) 
+            delete req.body['username'];
+        
+
 
         let body = helpers.normalizeData(req.body);
-        
-        let result = await page.updateOne({$set : body});
+
+        let result = await page.updateOne({$set: body});
 
         // Remove old pictures if new picture was uploaded
-        if(result.acknowledged === true){
-            if(req?.file && page.thumb !== CONSTS.PAGE_DEFAULT_THUBM){
-                Object.values(page.images).forEach(img=>{
-                    try{
+        if (result.acknowledged === true) {
+            if (req ?. file && page.thumb !== CONSTS.PAGE_DEFAULT_THUBM) {
+                Object.values(page.images).forEach(img => {
+                    try {
                         fs.unlinkSync(`./public${img}`);
-                    }catch(err){
-    
-                    }
+                    } catch (err) {}
                 });
             }
-        }else{
-            return this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش صفحه.'),res)
+        } else {
+            return this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش صفحه.'), res)
         }
 
-        return this.successResponse('صفحه مورد نظر با موفقیت ویرایش شد.',res);
+        return this.successResponse('صفحه مورد نظر با موفقیت ویرایش شد.', res);
     }
 
-    async removePage(req,res,next){
-        try {
-            // Check ID
-            this.isMongoId(req?.params?.id);
-    
-            //Find page
-            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id});//.populate('owner').exec();
-            if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
+    async removePage(req, res, next) {
+        try { // Check ID
+            this.isMongoId(req ?. params ?. id);
+
+            // Find page
+            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id}); // .populate('owner').exec();
+            if (! page) 
+                return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'), res);
             
+
+
             // Remove all sub posts in page.posts
             // page.posts.forEach(async (post)=>{
-                //removePost function
-                //await post.remove();
-                // console.log(`Remove ${post}`);
+            // removePost function
+            // await post.remove();
+            // console.log(`Remove ${post}`);
             // });
-    
+
             // Remove all images
-            if(page.thumb != CONSTS.PAGE_DEFAULT_THUBM){
-                Object.values(page.images).forEach(image=>{
+            if (page.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
+                Object.values(page.images).forEach(image => {
                     fs.unlinkSync(`./public${image}`)
                 })
             }
-    
+
             // Remove the page
             let result = await page.remove();
             return res.json(result);
@@ -141,30 +141,37 @@ class pageController extends Controller{
         }
     }
 
-    async removePageImage(req,res,next){
-        try {
-            // Check ID
-            this.isMongoId(req?.params?.id);
-        
-            //Find page
-            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id});//.populate('owner').exec();
-            if(!page) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res);
-    
-            if(page.thumb != CONSTS.PAGE_DEFAULT_THUBM){
-                Object.values(page.images).forEach(image=>{
+    async removePageImage(req, res, next) {
+        try { // Check ID
+            this.isMongoId(req ?. params ?. id);
+
+            // Find page
+            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id}); // .populate('owner').exec();
+            if (! page) 
+                return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'), res);
+            
+
+
+            if (page.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
+                Object.values(page.images).forEach(image => {
                     fs.unlinkSync(`./public${image}`)
                 })
             }
-    
+
             let images = {}
-    
-            let imageSize = [1080,720,480];
+
+            let imageSize = [1080, 720, 480];
             images['original'] = CONSTS.PAGE_DEFAULT_THUBM;
             imageSize.map(size => images[size] = `/images/pageDef-${size}.jpg`);
-    
+
             let thumb = images['480'];
-    
-            let result = await page.updateOne({$set : {thumb, images}})
+
+            let result = await page.updateOne({
+                $set: {
+                    thumb,
+                    images
+                }
+            })
 
             return res.json({
                 ...this.successPrams(),
@@ -176,27 +183,33 @@ class pageController extends Controller{
     }
 
 
-    async #imageResize(image){
+    async #imageResize(image) {
         let imageInfo = path.parse(image.path);
         let imageAddress = {}
-        imageAddress['original'] = this.#getImageUrl(image.destination,image.filename);
+        imageAddress['original'] = this.#getImageUrl(image.destination, image.filename);
 
-        let imageSize = [1080,720,480];
-        let resize = async (size)=>{
-            let imageName = `${imageInfo.name}-${size}${imageInfo.ext}`;
-            imageAddress[size] = this.#getImageUrl(image.destination,imageName);
+        let imageSize = [1080, 720, 480];
+        let resize = async (size) => {
+            let imageName = `${
+                imageInfo.name
+            }-${size}${
+                imageInfo.ext
+            }`;
+            imageAddress[size] = this.#getImageUrl(image.destination, imageName);
 
-            await sharp(image.path)
-                .resize(size)
-                .toFile(`${image.destination}/${imageName}`);
+            await sharp(image.path).resize(size).toFile(`${
+                image.destination
+            }/${imageName}`);
         }
 
         await imageSize.map(resize);
         return imageAddress;
     }
 
-    #getImageUrl(dir,name){
-        return `${dir.substr(8)}/${name}`;
+    #getImageUrl(dir, name) {
+        return `${
+            dir.substr(8)
+        }/${name}`;
     }
 }
 
