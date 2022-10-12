@@ -1,4 +1,4 @@
-let {body, check, param} = require('express-validator');
+let {body, check, query, param} = require('express-validator');
 const Validator = require('./validator');
 const path = require('path');
 const fs = require('fs');
@@ -9,6 +9,42 @@ const pageModel = require('../../models/pageModel');
 
 
 class postValidation extends Validator {
+    showPosts(){
+        return [
+            param('page')
+            .notEmpty()
+            .withMessage('شناسه صفحه را وارد کنید.')
+        ]
+    }
+
+    removePostLink(){
+        return [
+            param('id').custom(async (id, {req}) => {
+                if (id) {
+                    if (!this.isMongoId(id)) {
+                        throw new Error('شناسه پست معتبر نمی باشد.');
+                    } else {
+                        return true;
+                    }
+                }else{
+                    throw new Error('شناسه پست را وارد نمایید.')
+                }
+            }),
+            query('postlink')
+            .custom( postLink => {
+                if (postLink) {
+                    if (!this.isMongoId(postLink)) {
+                        throw new Error('شناسه لینک معتبر نمی باشد.');
+                    } else {
+                        return true;
+                    }
+                }else{
+                    throw new Error('شناسه لینک مورد نظر را وارد نمایید.')
+                }
+            })
+        ]
+    }
+
     addPost() {
         return [
             param('page').notEmpty().withMessage('شناسه صفحه والد نباید خالی باشد.').custom(async (pageId, {req}) => {
@@ -81,18 +117,12 @@ class postValidation extends Validator {
             param('id').custom(async (id, {req}) => {
                 if (id) {
                     if (!this.isMongoId(id)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.')
+                        throw new Error('شناسه پست معتبر نمی باشد.')
                     } else {
-                        let page = req ?. params ?. page;
-                        if (this.isMongoId(page)) {
-                            let post = await postModel.findOne({page, id});
-                            if (! post) 
-                                throw new Error('پست مورد نظر یافت نشد.');
-                            
-                            return true;
-                        }
+                        return true;
                     }
-
+                }else{
+                    throw new Error('شناسه پست را وارد نمایید.')
                 }
             }),
             param('page').custom(async (page, {req}) => {
@@ -100,14 +130,10 @@ class postValidation extends Validator {
                     if (!this.isMongoId(page)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.');
                     } else {
-                        let foundPage = await pageModel.findOne({owner: req.user.id, id: page});
-                        if (! foundPage) 
-                            throw new Error('این پست متعلق به شما نیست.')
-                        
                         return true;
                     }
-                } else {
-                    throw new Error('شناسه صفحه را وارد کنید.');
+                }else{
+                    throw new Error('شناسه صفحه را وارد نمایید.')
                 }
             }),
 
@@ -121,7 +147,6 @@ class postValidation extends Validator {
                         posts.forEach(post => {
                             if (post.id != postId) 
                                 throw new Error('عنوان پست تکراری است.');
-                            
                         })
                     }
                 }
@@ -133,16 +158,18 @@ class postValidation extends Validator {
 
     removePost() {
         return [
-            param('id').custom(async (id, {req}) => {
+            param('id').custom(async (id) => {
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
                     } else {
                         return true;
                     }
+                }else{
+                    throw new Error('شناسه صفحه را وارد نمایید.')
                 }
             }),
-            param('page').custom(async (page, {req}) => {
+            param('page').custom(async (page) => {
                 if (page) {
                     if (!this.isMongoId(page)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.');
@@ -157,7 +184,7 @@ class postValidation extends Validator {
     }
     removePostImage() {
         return [
-            param('id').custom(async (id, {req}) => {
+            param('id').custom(async (id) => {
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
@@ -166,7 +193,7 @@ class postValidation extends Validator {
                     }
                 }
             }),
-            param('page').custom(async (page, {req}) => {
+            param('page').custom(async (page) => {
                 if (page) {
                     if (!this.isMongoId(page)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.');
@@ -185,7 +212,7 @@ class postValidation extends Validator {
 
     addPostImage() {
         return [
-            param('id').custom(async (id, {req}) => {
+            param('id').custom(async (id) => {
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
@@ -194,7 +221,7 @@ class postValidation extends Validator {
                     }
                 }
             }),
-            param('page').custom(async (page, {req}) => {
+            param('page').custom(async (page) => {
                 if (page) {
                     if (!this.isMongoId(page)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.');

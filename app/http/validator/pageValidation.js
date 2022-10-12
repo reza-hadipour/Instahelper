@@ -8,7 +8,9 @@ const pageModel = require('../../models/pageModel');
 class pageValidation extends Validator {
     addPage() {
         return [
-            body('username').notEmpty().withMessage('نام کاربری نباید خالی باشد.').custom(async (username, {req}) => {
+            body('username').notEmpty()
+            .withMessage('نام کاربری نباید خالی باشد.')
+            .custom(async (username, {req}) => {
                 let page = await pageModel.findOne({username});
                 if (page) 
                     throw new Error('نام کاربری تکراری است.');
@@ -20,7 +22,8 @@ class pageValidation extends Validator {
                     
                 }
             }),
-            body('pageimage').custom(async (value, {req}) => {
+            body('pageimage')
+            .custom(async (value, {req}) => {
                 if (value) {
                     let fileExt = ['.PNG', '.JPG', '.JPEG', '.SVG'];
                     if (! fileExt.includes(path.extname(req ?. body ?. pageimage || '').toUpperCase())) {
@@ -29,9 +32,7 @@ class pageValidation extends Validator {
                 }
                 if (req ?. file) {
                     if (req ?. file ?. size >= (CONSTS.PAGE_MAX_FILE_SIZE)) {
-                        throw new Error(`حجم تصویر نباید از ${
-                            CONSTS.PAGE_MAX_FILE_SIZE / 1048576
-                        } مگابایت بیشتر باشد.`);
+                        throw new Error(`حجم تصویر نباید از ${CONSTS.PAGE_MAX_FILE_SIZE / 1048576} مگابایت بیشتر باشد.`);
                     }
                 }
             })
@@ -39,7 +40,10 @@ class pageValidation extends Validator {
     }
     editPage() {
         return [
-            param('id').notEmpty().withMessage('شناسه صفحه مورد نظر را وارد کنید.').custom(async (pageId, {req}) => {
+            param('id')
+            .notEmpty()
+            .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
+            .custom(async (pageId, {req}) => {
                 if (!this.isMongoId(pageId)) 
                     throw new Error('آی دی صفحه معتبر نمی باشد.');
                 
@@ -48,7 +52,8 @@ class pageValidation extends Validator {
                     throw new Error('صفحه مورد نظر پیدا نشد.');
                 
             }),
-            body('pageimage').custom(async (value, {req}) => {
+            body('pageimage')
+            .custom(async (value, {req}) => {
                 if (value) {
                     let fileExt = ['.PNG', '.JPG', '.JPEG', '.SVG'];
                     if (! fileExt.includes(path.extname(req ?. body ?. pageimage || '').toUpperCase())) {
@@ -57,9 +62,7 @@ class pageValidation extends Validator {
                 }
                 if (req ?. file) {
                     if (req ?. file ?. size >= (CONSTS.PAGE_MAX_FILE_SIZE)) {
-                        throw new Error(`حجم تصویر نباید از ${
-                            CONSTS.PAGE_MAX_FILE_SIZE / 1048576
-                        } مگابایت بیشتر باشد.`);
+                        throw new Error(`حجم تصویر نباید از ${CONSTS.PAGE_MAX_FILE_SIZE / 1048576} مگابایت بیشتر باشد.`);
                     }
                 }
             })

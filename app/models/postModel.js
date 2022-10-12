@@ -1,13 +1,20 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const mongoosePaginate = require('mongoose-paginate');
+
 const postSchema = Schema({
     page: {type: mongoose.Types.ObjectId, require: true, ref: 'Page'},
     title: {type: String, require: true},
     slug: {type: String},
     body: {type: String},
     images: [{type: String}],
-    links : [{type: mongoose.Types.ObjectId , ref: 'postLink'}],
+    links : [{type: mongoose.Types.ObjectId , ref: 'PostLink'}],
+    // links : [{
+    //         title : {type: String},
+    //         url: {type: String},
+    //         price: {type: String}
+    //     }],
     likes : [{type: mongoose.Types.ObjectId, default: null , ref: 'User'}],
     likeCount : {type: Number, default: 0},
     viewCount : {type: Number, default: 0},
@@ -22,5 +29,7 @@ postSchema.methods.inc = async function(number = 1){
 postSchema.method.path = function(){
     return `${this.page.path()}/${this.slug}`;
 }
+
+postSchema.plugin(mongoosePaginate);
 
 module.exports = new mongoose.model('Post',postSchema);
