@@ -455,12 +455,7 @@ class postController extends Controller {
                 return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             }
 
-            // let post = await this.#checkOwnerShipOfPost(req).catch(err => {
-            //     return this.errorResponse(err, res);
-            // });
-            // let pageId = req.params.page;
             let postId = req.params.id;
-            // let postSlug = req.params.slug;
             let owner = req.user.id;
 
             // Find Post
@@ -501,7 +496,8 @@ class postController extends Controller {
                     return this.errorResponse(createHttpError.InternalServerError('خطا در حذف لینک'), res);
                 })
             }else{
-                res.json('Not Found');
+                return this.errorResponse(createHttpError.NotFound('لینک مربوطه پیدا نشد.'), res);
+
             }
             
         }catch(error){
@@ -511,20 +507,18 @@ class postController extends Controller {
 
     #checkOwnerShipOfPost(req) {
         return new Promise(async (resolve, reject) => {
-            let pageId = req.params.page;
+            // let pageId = req.params.page;
             let postId = req.params.id;
             let owner = req.user.id;
 
             // Find Post
-            let post = await postModel.findOne({page: pageId, _id: postId}).populate({path: 'page', select: 'owner'}).exec();
+            let post = await postModel.findById(postId).populate({path: 'page', select: ['owner', '_id']}).exec();
 
             // Check ownership of post
             if (! post) 
                 reject(createHttpError.NotFound('پست مورد نظر پیدا نشد.'));
-            
-
-
-            if (post ?. page ?. owner != owner) 
+                
+            if (post.page.owner != owner) 
                 reject(createHttpError.NotFound('این پست متعلق به شما نیست.'));
             
 

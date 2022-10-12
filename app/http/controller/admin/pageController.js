@@ -28,7 +28,7 @@ class pageController extends Controller {
         if (req.file) {
             // if file was stored, transfer the image path into req.body
             // req.body.pageimage = ((req.file.path).replaceAll('\\','/')).substr(6);
-            images = this.#imageResize(req.file);
+            images = await this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
         } else { // Set default images for new page
@@ -77,7 +77,7 @@ class pageController extends Controller {
         let images = [];
 
         if (req.file) { // if file was stored, transfer the image path into req.body
-            images = this.#imageResize(req.file);
+            images = await this.#imageResize(req.file);
             req.body.images = images;
             req.body.thumb = images['480'];
         }

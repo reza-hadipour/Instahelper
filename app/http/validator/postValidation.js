@@ -9,6 +9,12 @@ const pageModel = require('../../models/pageModel');
 
 
 class postValidation extends Validator {
+
+    constructor(){
+        super();
+        this.isMongoId = this.isMongoId
+    }
+
     showPosts(){
         return [
             param('page')
@@ -19,15 +25,13 @@ class postValidation extends Validator {
 
     removePostLink(){
         return [
-            param('id').custom(async (id, {req}) => {
+            param('id').custom((id)=>{
                 if (id) {
                     if (!this.isMongoId(id)) {
-                        throw new Error('شناسه پست معتبر نمی باشد.');
+                        throw new Error('شناسه صفحه معتبر نمی باشد.')
                     } else {
                         return true;
                     }
-                }else{
-                    throw new Error('شناسه پست را وارد نمایید.')
                 }
             }),
             query('postlink')
@@ -114,40 +118,28 @@ class postValidation extends Validator {
 
     editPost() {
         return [
-            param('id').custom(async (id, {req}) => {
+            param('id').custom((id)=>{
                 if (id) {
-                    if (!this.isMongoId(id)) {
-                        throw new Error('شناسه پست معتبر نمی باشد.')
-                    } else {
-                        return true;
-                    }
-                }else{
-                    throw new Error('شناسه پست را وارد نمایید.')
-                }
-            }),
-            param('page').custom(async (page, {req}) => {
-                if (page) {
-                    if (!this.isMongoId(page)) {
+                    if (!this.isMongoId(id)) 
                         throw new Error('شناسه صفحه معتبر نمی باشد.');
-                    } else {
-                        return true;
-                    }
-                }else{
-                    throw new Error('شناسه صفحه را وارد نمایید.')
+                    
+                    return true;
                 }
             }),
-
             body('title').custom(async (title, {req}) => {
                 let page = req ?. params ?. page;
                 let postId = req ?. params ?. id;
-                if (this.isMongoId(postId) && this.isMongoId(page)) {
+                if (this.isMongoId(postId)) {
                     let slug = this.slug(title);
-                    let posts = await postModel.find({page, slug}).exec();
-                    if (posts.length > 0) {
-                        posts.forEach(post => {
-                            if (post.id != postId) 
-                                throw new Error('عنوان پست تکراری است.');
-                        })
+                    let selectedPost = await postModel.findById(postId).exec();
+                    if(selectedPost){
+                        let pagePosts = await postModel.find({page: selectedPost.page , slug});
+                        if (pagePosts.length > 0) {
+                            pagePosts.forEach(post => {
+                                if (post.id != postId) 
+                                    throw new Error('عنوان پست تکراری است.');
+                            })
+                        }
                     }
                 }
                 return true
@@ -158,50 +150,26 @@ class postValidation extends Validator {
 
     removePost() {
         return [
-            param('id').custom(async (id) => {
+            param('id').custom(id=>{
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
                     } else {
                         return true;
                     }
-                }else{
-                    throw new Error('شناسه صفحه را وارد نمایید.')
-                }
-            }),
-            param('page').custom(async (page) => {
-                if (page) {
-                    if (!this.isMongoId(page)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.');
-                    } else {
-                        return true;
-                    }
-                } else {
-                    throw new Error('شناسه صفحه را وارد کنید.');
                 }
             })
         ]
     }
     removePostImage() {
         return [
-            param('id').custom(async (id) => {
+            param('id').custom(id => {
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
                     } else {
                         return true;
                     }
-                }
-            }),
-            param('page').custom(async (page) => {
-                if (page) {
-                    if (!this.isMongoId(page)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.');
-                    } else {
-                        return true;
-                    }
-                } else {
-                    throw new Error('شناسه صفحه را وارد کنید.');
                 }
             }),
             body('imagename')
@@ -212,24 +180,13 @@ class postValidation extends Validator {
 
     addPostImage() {
         return [
-            param('id').custom(async (id) => {
+            param('id').custom(id => {
                 if (id) {
                     if (!this.isMongoId(id)) {
                         throw new Error('شناسه صفحه معتبر نمی باشد.')
                     } else {
                         return true;
                     }
-                }
-            }),
-            param('page').custom(async (page) => {
-                if (page) {
-                    if (!this.isMongoId(page)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.');
-                    } else {
-                        return true;
-                    }
-                } else {
-                    throw new Error('شناسه صفحه را وارد کنید.');
                 }
             }),
             body('postimage').notEmpty().withMessage('تصویری برای آپلود انتخاب کنید.').custom(async (file, {req}) => { // Check file size
@@ -276,6 +233,16 @@ class postValidation extends Validator {
                 }
             })
         ]
+    }
+
+    #checkIdIsMongoId(id){
+        if (id) {
+            if (!this.isMongoId(id)) {
+                throw new Error('شناسه صفحه معتبر نمی باشد.')
+            } else {
+                return true;
+            }
+        }
     }
 
 }

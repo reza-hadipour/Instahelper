@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req,file,cb)=>{
     let fileExt = ['.PNG','.JPG','.JPEG','.SVG'];
-    req.body.pageimages = file.originalname  // To check file in pageValidation
+    req.body.pageimage = file.originalname  // To check file in pageValidation
 
     if( ! fileExt.includes(path.extname(file.originalname).toUpperCase())){
         cb(null,false);

@@ -6,7 +6,6 @@ const pageController = require('../../../http/controller/admin/pageController');
 const postController = require('../../../http/controller/admin/postController');
 
 // Midllewares
-const authenticateApi = require('../../../http/middleware/authenticateApi');
 const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage');
 
 // Validation
@@ -20,7 +19,7 @@ router.get('/', (req, res, next) => {
 
 
 // Page routes
-router.post('/addPage', uploadPage.single('pageimage'), addPage(), pageController.addPage);
+router.post('/addpage', uploadPage.single('pageimage'), addPage(), pageController.addPage);
 router.put('/editPage/:id', uploadPage.single('pageimage'), editPage(), pageController.editPage)
 router.delete('/removePage/:id', pageController.removePage)
 router.delete('/removePageImage/:id', pageController.removePageImage)
@@ -28,11 +27,11 @@ router.delete('/removePageImage/:id', pageController.removePageImage)
 // Post Routes
 router.get('/posts/:page',showPosts(), postController.showPosts);
 router.post('/addPost/:page', uploadPost.array('postimage'), addPost(), postController.addPost);
-router.put('/editPost/:page/:id', editPost(), postController.editPost);
-router.delete('/removePost/:page/:id', removePost(), postController.removePost);
-router.post('/addPostImage/:page/:id', uploadPost.array('postimage'), addPostImage(), postController.addPostImage);
-router.delete('/removePostImages/:page/:id', removePost(), postController.removeAllPostImages);
-router.delete('/removePostImage/:page/:id', removePostImage(), postController.removeOnePostImage);
+router.put('/editPost/:id', editPost(), postController.editPost);
+router.delete('/removePost/:id', removePost(), postController.removePost);
+router.post('/addPostImage/:id', uploadPost.array('postimage'), addPostImage(), postController.addPostImage);
+router.delete('/removePostImages/:id', removePost(), postController.removeAllPostImages);
+router.delete('/removePostImage/:id', removePostImage(), postController.removeOnePostImage);
 router.delete('/removePostLink/:id', removePostLink(), postController.removePostLink);
 
 module.exports = router;
