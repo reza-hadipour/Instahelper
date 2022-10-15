@@ -17,152 +17,121 @@ const helpers = require('../../../../helpers');
 'use strict';
 class postController extends Controller {
 
-    async showPosts(req,res,next){
-        if (!await this.validationData(req)) {
-            return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-        }
-
-        this.#checkOwnershipOfPage(req).catch(err => {
-            return this.errorResponse(err, res);
-        });
-
-        let pageId = req.params.page;
-
-        let page = req.query.page || 1;
-        let limit = req.query.limit || 5;
-
-        let posts = await postModel.paginate({page: pageId},{
-            select : ['-id','-createdAt','-__v','-likes'],
-            page,
-            limit, 
-            populate : [
-                {
-                    path: 'page',
-                    select: ['owner','username','title','images','thumb'],
-                },
-                {
-                    path: 'links',
-                    select: ['-__v']
-                }
-            ]
-        });
-
-        return res.json(posts);
-    }
-    
-
     async addPost(req, res, next) {
-        if (!await this.validationData(req)) {
-            if (req ?. files ?. length > 0) { // Remove the file if it was stored
-                for (const item of req.files) {
-                    fs.unlinkSync(item.path);
-                }
-            }
-            return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-        } 
-
-        let page = await this.#checkOwnershipOfPage(req).catch(err => {
-            return this.errorResponse(err, res);
-        });
-
         
-        if (req ?. files.length > CONSTS.POST_MAX_FILE) {
-            req.files.forEach((item, index) => {
-                if (index > CONSTS.POST_MAX_FILE - 1) {
-                    fs.unlinkSync(`${item.destination}/${item.filename}`);
-                    delete req.files[index];
+            if (!await this.validationData(req)) {
+                if (req ?. files ?. length > 0) { // Remove the file if it was stored
+                    for (const item of req.files) {
+                        fs.unlinkSync(item.path);
+                    }
                 }
-            });
-
-            req.files.length = CONSTS.POST_MAX_FILE;
-        }
-
-        req.body.postimage = undefined; // Clear postimage from postValidation
-
-        let images = [];
-
-        if (req.files.length > 0) { // if files were stored, transfer the images path into req.body
-            images = await this.#imageResizeMulti(req.files);
-            req.body.images = images;
-            req.files.forEach(async (item) => {
-                fs.unlinkSync(`${item.destination}/${item.filename}`);
-            });
-
-        } else { // Set default images for new page
-            images.push(CONSTS.POST_DEFAULT_THUBM);
-            req.body.images = images;
-        }
-
-        req.body.slug = helpers.slug(req.body.title);
-        req.body.page = req.params.page;
-        let body = helpers.normalizeData(req.body);
-
-        // Store Links objects in postLinks collection
-        let newPostLinksId = [];
+                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            } 
     
-        if(body?.links?.length > 0){
-            let bodyLinks = [];
-            bodyLinks.push(...body.links);
-    
-            let resultPostLink = await postLinkModel.insertMany(bodyLinks)
-            .catch(err => {
-                debugDB(err);
-                return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد پست'),res);
-            });
-            
-            // Achieve new stored links ID
-            resultPostLink.forEach((link)=>{
-                newPostLinksId.push(link.id);
-            });
-            
-            // post.links.push(...postLinksId)
-            // await post.save();
-            // delete body['links'];
-            
-            bodyLinks = [];
-            bodyLinks.push(...newPostLinksId);
-    
-            body.links = bodyLinks;
-        }
-
-        let newPost = new postModel(body);
-
-        newPost.save()
-        .then(() => {
-            return res.json({
-                ...this.successPrams(),
-                message: "پست جدید با موفقیت ساخته شد.",
-                newPost: {
-                    title: newPost.title,
-                    slug: newPost.slug,
-                    images: newPost.images,
-                    postId: newPost.id,
-                    pageId: newPost.page
-                }
-            })
-        })
-        .catch(err => {
-            // Remove all new links from postLinks collection
-            if(newPostLinksId.length > 0){
-                postLinkModel.deleteMany({ _id : { $in : newPostLinksId}},(err,result)=>{
-                    if(err) debugDB(err);
-                    console.log('Deleting new postLinks...',result);
+            let checkOwnershipOfPageError;
+                let page = await this.checkOwnershipOfPage(req).catch(err => {
+                    checkOwnershipOfPageError = err;
                 });
+                if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError, res);
+            
+            if (req ?. files?.length > CONSTS.POST_MAX_FILE) {
+                req.files.forEach((item, index) => {
+                    if (index > CONSTS.POST_MAX_FILE - 1) {
+                        fs.unlinkSync(`${item.destination}/${item.filename}`);
+                        delete req.files[index];
+                    }
+                });
+    
+                req.files.length = CONSTS.POST_MAX_FILE;
             }
-            debugDB(err);
-            return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد پست جدید.'), res)
-        })
+    
+            req.body.postimage = undefined; // Clear postimage from postValidation
+    
+            let images = [];
+    
+            if (req.files?.length > 0) { // if files were stored, transfer the images path into req.body
+                images = await this.#imageResizeMulti(req.files);
+                req.body.images = images;
+                req.files.forEach(async (item) => {
+                    fs.unlinkSync(`${item.destination}/${item.filename}`);
+                });
+    
+            } else { // Set default images for new page
+                images.push(CONSTS.POST_DEFAULT_THUBM);
+                req.body.images = images;
+            }
+    
+            req.body.slug = helpers.slug(req.body.title);
+            req.body.page = req.params.page;
+            let body = helpers.normalizeData(req.body);
+    
+            // Store Links objects in postLinks collection
+            let newPostLinksId = [];
+        
+            if(body?.links?.length > 0){
+                let bodyLinks = [];
+                // In swagger I received the links as a string, so I need to cast it to json.
+                if (typeof body?.links === 'string'){
+                    bodyLinks.push(...JSON.parse(body.links));
+                }else{
+                    bodyLinks.push(...body.links);
+                }
+        
+                let resultPostLink = await postLinkModel.insertMany(bodyLinks)
+                .catch(err => {
+                    debugDB(err);
+                    return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد پست'),res);
+                });
+                
+                // Achieve new stored links ID
+                resultPostLink.forEach((link)=>{
+                    newPostLinksId.push(link.id);
+                });
+                
+                bodyLinks = [];
+                bodyLinks.push(...newPostLinksId);
+        
+                body.links = bodyLinks;
+            }
+    
+            let newPost = new postModel(body);
+    
+            newPost.save()
+            .then(() => {
+                return res.json({
+                    ...this.successPrams(),
+                    message: "پست جدید با موفقیت ساخته شد.",
+                    newPost: {
+                        title: newPost.title,
+                        slug: newPost.slug,
+                        images: newPost.images,
+                        postId: newPost.id,
+                        pageId: newPost.page
+                    }
+                })
+            })
+            .catch(err => {
+                // Remove all new links from postLinks collection
+                if(newPostLinksId.length > 0){
+                    postLinkModel.deleteMany({ _id : { $in : newPostLinksId}},(err,result)=>{
+                        if(err) debugDB(err);
+                        console.log('Deleting new postLinks...',result);
+                    });
+                }
+                debugDB(err);
+                return this.errorResponse(createHttpError.InternalServerError('خطا در ایجاد پست جدید.'), res)
+            })
+            
     }
-
 
     async editPost(req, res, next) {
         try {
 
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
     
-            let post = await this.#checkOwnerShipOfPost(req).catch(err => {
+            let post = await this.checkOwnerShipOfPost(req).catch(err => {
                 return this.errorResponse(err, res);
             });
     
@@ -191,7 +160,12 @@ class postController extends Controller {
     
             if(body?.links?.length > 0){
                 let bodyLinks = [];
-                bodyLinks.push(...body.links);
+                // In swagger I received the links as a string, so I need to cast it to json.
+                if (typeof body?.links === 'string'){
+                    bodyLinks.push(...JSON.parse(body.links));
+                }else{
+                    bodyLinks.push(...body.links);
+                }
         
                 let resultPostLink = await postLinkModel.insertMany(bodyLinks)
                 .catch(err => {
@@ -237,11 +211,11 @@ class postController extends Controller {
 
     async removePost(req, res, next) {
         try {
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
-            let post = await this.#checkOwnerShipOfPost(req)
+            let post = await this.checkOwnerShipOfPost(req)
             .catch(err => {
                 return this.errorResponse(err, res);
             });
@@ -289,14 +263,15 @@ class postController extends Controller {
     async addPostImage(req, res, next) {
 
         try {
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
-            let post = await this.#checkOwnerShipOfPost(req).catch(err => {
-                return this.errorResponse(err, res);
+            let checkOwnerShipOfPostError = undefined;
+            let post = await this.checkOwnerShipOfPost(req).catch(err => {
+                checkOwnerShipOfPostError = err;
             });
-
+            if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
 
             // Check count of images in post
             let oldPostImagesLength = 1;
@@ -365,11 +340,11 @@ class postController extends Controller {
 
     async removeOnePostImage(req, res, next) {
         try {
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
-            let post = await this.#checkOwnerShipOfPost(req).catch(err => {
+            let post = await this.checkOwnerShipOfPost(req).catch(err => {
                 return this.errorResponse(err, res);
             });
 
@@ -393,22 +368,22 @@ class postController extends Controller {
 
                         return res.json({
                             ...this.successPrams(),
-                            message: `${imageName} is removed from the post.`,
+                            message: `${imageName} با موفقیت از تصاویر پست مربوطه حذف شد.`,
                             images: post.images,
                             post: post.id
                         });
                     }else{
-                        return res.json({
+                        return res.status(400).json({
                             status: 'failed',
-                            statusCode : 404,
-                            message: "There is no file to remove."
+                            statusCode : 400,
+                            message: "فایلی برای پاک کردن یافت نشد."
                         });
                     }
                 }else{
-                    return res.json({
+                    return res.status(404).json({
                         status: 'failed',
                         statusCode : 404,
-                        message: "Image not found"
+                        message: "تصویر مورد نظر در این پست یافت نشد."
                     });
                 }
             }
@@ -419,11 +394,11 @@ class postController extends Controller {
 
     async removeAllPostImages(req, res, next) {
         try {
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
-            let post = await this.#checkOwnerShipOfPost(req).catch(err => {
+            let post = await this.checkOwnerShipOfPost(req).catch(err => {
                 return this.errorResponse(err, res);
             });
 
@@ -438,7 +413,7 @@ class postController extends Controller {
                 await post.save();
                 res.json({
                     ...this.successPrams(),
-                    message: 'All images are removed.',
+                    message: 'تمامی تصاویر پست مورد نظر حذف شدند.',
                     image: post.images[0],
                     post: post.id
                 });
@@ -451,9 +426,9 @@ class postController extends Controller {
 
     async removePostLink(req,res,next){
         try {
-            if (!await this.validationData(req)) {
-                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            }
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
             let postId = req.params.id;
             let owner = req.user.id;
@@ -468,7 +443,7 @@ class postController extends Controller {
                 return this.errorResponse(createHttpError.NotFound('پست مورد نظر پیدا نشد.'),res);
 
             if (post ?. page ?. owner != owner) 
-                return this.errorResponse(createHttpError.NotFound('شما مجاز به اعمال تغییرات در این پست نیستید.'),res);
+                return this.errorResponse(createHttpError.NotAcceptable('شما مجاز به اعمال تغییرات در این پست نیستید.'),res);
 
             // Unlink postLinks
             // return res.json(post);
@@ -489,11 +464,10 @@ class postController extends Controller {
                         ...this.successPrams(),
                         message: `${info.title} با موفقیت حذف شد.`
                     });
-                    // return res.json(info);
                 })
                 .catch(err => {
                     debugDb(err);
-                    return this.errorResponse(createHttpError.InternalServerError('خطا در حذف لینک'), res);
+                    throw new Error('خطار در حذف لینک');
                 })
             }else{
                 return this.errorResponse(createHttpError.NotFound('لینک مربوطه پیدا نشد.'), res);
@@ -505,39 +479,7 @@ class postController extends Controller {
         }
     }
 
-    #checkOwnerShipOfPost(req) {
-        return new Promise(async (resolve, reject) => {
-            // let pageId = req.params.page;
-            let postId = req.params.id;
-            let owner = req.user.id;
-
-            // Find Post
-            let post = await postModel.findById(postId).populate({path: 'page', select: ['owner', '_id']}).exec();
-
-            // Check ownership of post
-            if (! post) 
-                reject(createHttpError.NotFound('پست مورد نظر پیدا نشد.'));
-                
-            if (post.page.owner != owner) 
-                reject(createHttpError.NotFound('این پست متعلق به شما نیست.'));
-            
-
-
-            resolve(post);
-        })
-    }
-
-    #checkOwnershipOfPage(req){
-        return new Promise(async (resolve,reject)=>{
-                let owner = req.user.id;
-                let pageId = req.params.page;
-
-                let page = await pageModel.findOne({owner, id: pageId});
-                if (! page) 
-                    reject(createHttpError.NotFound('این پست متعلق به شما نیست.'))
-                resolve(page);
-            })
-        }
+    
 
     async #imageResize(image) {
         let imageInfo = path.parse(image.path);

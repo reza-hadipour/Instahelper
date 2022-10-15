@@ -6,6 +6,24 @@ const path = require('path');
 const pageModel = require('../../models/pageModel');
 
 class pageValidation extends Validator {
+    
+    showPosts() {
+        return [
+            param('page').notEmpty().withMessage('شناسه صفحه را وارد کنید.'),
+            param('page').custom(pageId => {
+                if(pageId){
+                    if( ! Validator.isMongoId(pageId)){
+                        throw new Error('شناسه صفحه معتبر نمی باشد.');
+                    }else{
+                        return true;
+                    }
+                }else{
+                    return true;
+                }
+            })
+            ]
+    }
+
     addPage() {
         return [
             body('username').notEmpty()

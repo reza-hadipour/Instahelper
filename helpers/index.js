@@ -28,7 +28,7 @@ class helper {
   }
 
   slug(title){
-    return String(title).replace(/([^a-zA-Z0-9آ-ی0-9]|-)+/g,'-');
+    return String(title).replace(/([^a-zA-Z0-9آ-ی0-9+]|-)+/g,'-');
   }
 
   

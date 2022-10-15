@@ -8,12 +8,43 @@ const Controller = require('../controller');
 
 // Models
 const pageModel = require('../../../models/pageModel');
+const postModel = require('../../../models/postModel');
 
 // Helper
 const helpers = require('../../../../helpers');
 
 'use strict';
 class pageController extends Controller {
+
+    async showPosts(req,res,next){
+
+        this.checkOwnershipOfPage(req).catch(err => {
+            return this.errorResponse(err, res);
+        });
+
+        let pageId = req.params.page;
+
+        let page = req.query.page || 1;
+        let limit = req.query.limit || 5;
+
+        let posts = await postModel.paginate({page: pageId},{
+            select : ['-id','-createdAt','-__v','-likes'],
+            page,
+            limit, 
+            populate : [
+                {
+                    path: 'page',
+                    select: ['owner','username','title','images','thumb'],
+                },
+                {
+                    path: 'links',
+                    select: ['-__v']
+                }
+            ]
+        });
+
+        return res.json(posts);
+    }
 
     async addPage(req, res, next) {
         if (!await this.validationData(req)) {

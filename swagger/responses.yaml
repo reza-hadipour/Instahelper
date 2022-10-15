@@ -296,7 +296,7 @@ components:
                 type: string
                 example: "Failed"
               statusCode:
-                type: intiger
+                type: integer
                 example: 401
               Error:
                 type: object
@@ -325,3 +325,41 @@ components:
                       items:
                         type: string
                       example: ["صفحه مورد نظر پیدا نشد."]
+    400BadRequestDouplicatTitle:
+      description: "Bad request errors"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "عنوان پست در این صفحه تکراری است."
+    406NotAcceptablePostAuthorization:
+      description: "Not Acceptable"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 406
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "این پست متعلق به شما نیست."

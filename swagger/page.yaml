@@ -1,8 +1,80 @@
 paths:
 
+  /admin/showPosts/{page}:
+      get:
+        tags: ['Admin API - Page']
+        summary: "Show All Posts of a Page"
+        security:
+          - BearerAuth: []
+        parameters:
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: string
+            example: "6346d5debc0e5f5274a6e091"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+                
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            description: "Bad request errors"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 400
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "شناسه صفحه معتبر نمی باشد."
+          200:
+            description: "Show All Posts of a Specific Page"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    docs:
+                      type: array
+                      items:
+                        type: string
+                        example: ['Post 1','Post 2', 'Post 3']
+                    total:
+                      type: integer
+                      example: 7
+                    limit:
+                      type: integer
+                      example: 10
+                    page:
+                      type: integer
+                      example: 1
+                    pages:
+                      type: integer
+                      example: 1
+                    
   /admin/addpage:
       post:
-        tags: ['Admin API']
+        tags: ['Admin API - Page']
         summary: "Add new Page"
         security:
           - BearerAuth: []
@@ -82,7 +154,7 @@ paths:
 
   /admin/editpage/{id}:
     put:
-      tags: ['Admin API']
+      tags: ['Admin API - Page']
       summary: "Edit a Page"
       security:
         - BearerAuth: []
@@ -157,7 +229,7 @@ paths:
 
   /admin/removepageimage/{id}:
     delete:
-      tags: ['Admin API']
+      tags: ['Admin API - Page']
       summary: "Delete the page image"
       security: 
         - BearerAuth: []

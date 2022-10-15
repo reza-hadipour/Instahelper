@@ -9,40 +9,23 @@ const pageModel = require('../../models/pageModel');
 
 
 class postValidation extends Validator {
-
-    constructor(){
+    constructor() {
         super();
-        this.isMongoId = this.isMongoId
     }
 
-    showPosts(){
-        return [
-            param('page')
-            .notEmpty()
-            .withMessage('شناسه صفحه را وارد کنید.')
-        ]
-    }
+    
 
-    removePostLink(){
+    removePostLink() {
         return [
-            param('id').custom((id)=>{
-                if (id) {
-                    if (!this.isMongoId(id)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.')
-                    } else {
-                        return true;
-                    }
-                }
-            }),
-            query('postlink')
-            .custom( postLink => {
+            param('id').custom(this.#checkIdIsMongoId),
+            query('postlink').custom(postLink => {
                 if (postLink) {
-                    if (!this.isMongoId(postLink)) {
+                    if (! Validator.isMongoId(postLink)) {
                         throw new Error('شناسه لینک معتبر نمی باشد.');
                     } else {
                         return true;
                     }
-                }else{
+                } else {
                     throw new Error('شناسه لینک مورد نظر را وارد نمایید.')
                 }
             })
@@ -53,25 +36,26 @@ class postValidation extends Validator {
         return [
             param('page').notEmpty().withMessage('شناسه صفحه والد نباید خالی باشد.').custom(async (pageId, {req}) => {
                 if (pageId) {
-                    if (!this.isMongoId(pageId)) 
+                    if (! Validator.isMongoId(pageId)) 
                         throw new Error('شناسه صفحه وارد شده معتبر نمی باشد.');
                     
-                    return true;
                 }
+                return true;
             }),
             body('title').notEmpty().withMessage('عنوان پست نباید خالی باشد.').custom(async (title, {req}) => {
                 let slug = this.slug(title);
                 let page = req ?. params ?. page;
-                if (page && this.isMongoId(page)) {
+                if (page && Validator.isMongoId(page)) {
                     let post = await postModel.findOne({page, slug})
                     if (post) 
                         throw new Error('عنوان پست در این صفحه تکراری است.');
                     
-                    return true;
                 }
+                return true;
             }),
-            body('postimage').custom(async (file, {req}) => { // Check file size
-                if (req ?. files.length > 0) {
+            body('postimage')
+            .custom(async (file, {req}) => { // Check file size
+                if (req ?. files?.length > 0) {
                     let sizeError = [];
 
                     for (const item of req.files) {
@@ -86,6 +70,8 @@ class postValidation extends Validator {
                         } مگابایت بیشتر باشد. ${sizeError}`);
                     }
 
+                }else{
+                    return true;
                 }
             }).custom(async (file, {req}) => {
                 // Check file limit
@@ -118,26 +104,20 @@ class postValidation extends Validator {
 
     editPost() {
         return [
-            param('id').custom((id)=>{
-                if (id) {
-                    if (!this.isMongoId(id)) 
-                        throw new Error('شناسه صفحه معتبر نمی باشد.');
-                    
-                    return true;
-                }
-            }),
+            param('id').custom(this.#checkIdIsMongoId),
             body('title').custom(async (title, {req}) => {
                 let page = req ?. params ?. page;
                 let postId = req ?. params ?. id;
-                if (this.isMongoId(postId)) {
+                if (Validator.isMongoId(postId)) {
                     let slug = this.slug(title);
                     let selectedPost = await postModel.findById(postId).exec();
-                    if(selectedPost){
-                        let pagePosts = await postModel.find({page: selectedPost.page , slug});
+                    if (selectedPost) {
+                        let pagePosts = await postModel.find({page: selectedPost.page, slug});
                         if (pagePosts.length > 0) {
                             pagePosts.forEach(post => {
                                 if (post.id != postId) 
                                     throw new Error('عنوان پست تکراری است.');
+                                
                             })
                         }
                     }
@@ -149,46 +129,18 @@ class postValidation extends Validator {
 
 
     removePost() {
-        return [
-            param('id').custom(id=>{
-                if (id) {
-                    if (!this.isMongoId(id)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.')
-                    } else {
-                        return true;
-                    }
-                }
-            })
-        ]
+        return [param('id').custom(this.#checkIdIsMongoId)]
     }
     removePostImage() {
         return [
-            param('id').custom(id => {
-                if (id) {
-                    if (!this.isMongoId(id)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.')
-                    } else {
-                        return true;
-                    }
-                }
-            }),
-            body('imagename')
-                .notEmpty()
-                .withMessage('عنوان تصویر مورد نظر را وارد کنید.')
+            param('id').custom(this.#checkIdIsMongoId),
+            body('imagename').notEmpty().withMessage('عنوان تصویر مورد نظر را وارد کنید.')
         ]
     }
 
     addPostImage() {
         return [
-            param('id').custom(id => {
-                if (id) {
-                    if (!this.isMongoId(id)) {
-                        throw new Error('شناسه صفحه معتبر نمی باشد.')
-                    } else {
-                        return true;
-                    }
-                }
-            }),
+            param('id').custom(this.#checkIdIsMongoId),
             body('postimage').notEmpty().withMessage('تصویری برای آپلود انتخاب کنید.').custom(async (file, {req}) => { // Check file size
                 if (req ?. files ?. length > 0) {
                     let sizeError = [];
@@ -235,13 +187,15 @@ class postValidation extends Validator {
         ]
     }
 
-    #checkIdIsMongoId(id){
+    #checkIdIsMongoId(id) {
         if (id) {
-            if (!this.isMongoId(id)) {
+            if (! Validator.isMongoId(id)) {
                 throw new Error('شناسه صفحه معتبر نمی باشد.')
             } else {
                 return true;
             }
+        } else {
+            throw new Error('شناسه صفحه را وارد کنید.')
         }
     }
 

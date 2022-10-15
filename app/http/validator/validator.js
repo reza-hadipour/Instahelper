@@ -41,7 +41,7 @@ class Validator{
 
 
 
-    isMongoId(mongoId){
+    static isMongoId(mongoId){
         return isMongoID(mongoId);
     }
 }

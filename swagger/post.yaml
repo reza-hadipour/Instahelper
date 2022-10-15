@@ -1,0 +1,524 @@
+paths:
+
+  /admin/addPost/{page}:
+      post:
+        tags: ['Admin API - Post']
+        summary: "Add new post"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: string
+            example: "6346d5debc0e5f5274a6e091"
+        requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                required:
+                  - title
+                properties:
+                  title:
+                    type: string
+                    example: "Samsung Galaxy S21"
+                  body:
+                    type: string
+                    example: "New Samsung smartphone 2021"
+                  postimage:
+                    type: string
+                    format: binary
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        title:
+                          type: string
+                        price:
+                          type: string
+                    example: [
+                              {"title" : "Gray",
+                              "price" : "1500"
+                              },
+                              {"title" : "White",
+                              "price" : "1400"
+                              }
+                            ]
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400BadRequestDouplicatTitle"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          500:
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 500
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "خطا در ایجاد پست"
+          200:
+            description: "Create new post successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: "پست جدید با موفقیت ساخته شد."
+                    newPost:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: "Samsung Galaxy S21"
+                        slug:
+                          type: string
+                          example: "Samsung-Galaxy-S21"
+                        images:
+                          type: array
+                          items:
+                            type: string
+                            example: ["/upload/images/2022/10/13/postimage_1665683114333-85675144-720.jpeg","/upload/images/2022/10/13/postimage_1665683114333-85675133-720.jpeg"]
+                        postId:
+                          type: string
+                          example: "63484eaaf02a234041097a6e"
+                        pageId:
+                          type: string
+                          example: "6346d5debc0e5f5274a6e091"
+
+  /admin/editPost/{id}:
+      put:
+        tags: ['Admin API - Post']
+        summary: "Edit Post"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: "63484eaaf02a234041097a6e"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Samsung Galaxy S21+"
+                  body:
+                    type: string
+                    example: "New Samsung smartphone 2021"
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        title:
+                          type: string
+                        price:
+                          type: string
+                    example: [
+                              {"title" : "Gray",
+                              "price" : "1500"
+                              },
+                              {"title" : "White",
+                              "price" : "1400"
+                              }
+                            ]
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400BadRequestDouplicatTitle"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          500:
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 500
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "خطا در ویرایش پست"
+          200:
+            description: "Edit the post successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: string
+                      example: 200
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "پست مورد نظر با موفقیت ویرایش شد."
+
+  /admin/addPostImage/{id}:
+    post:
+      tags: ['Admin API - Post']
+      summary: "Add Image to the Post"
+      security:
+        - BearerAuth: []
+      parameters: 
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          example: "63484eaaf02a234041097a6e"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                postimage:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                                      
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        406:
+          description: "Post image limitation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 406
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "سقف تصاویر آپلود شده پر شده است."
+        404:
+          description: "Post Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 406
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "پست مورد نظر پیدا نشد."
+        200:
+          description: "Add images to the post successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: "تصاویر با موفقیت به پست شما اضافه شد."
+                  post:
+                    type: string
+                    example: "63484eaaf02a234041097a6e"
+                  images:
+                    type: array
+                    items:
+                      type: string
+                      example: ["/upload/images/2022/10/13/postimage_1665683114333-85675123-720.jpeg","/upload/images/2022/10/15/postimage_1665819545685-261522408-720.jpg","/upload/images/2022/10/15/postimage_1665819984568-620425663-720.png"]
+
+  /admin/removePostImages/{id}:
+    delete:
+      tags: ['Admin API - Post']
+      summary: "Remove All Post's Images"
+      security:
+        - BearerAuth: []
+      parameters: 
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          example: "63484eaaf02a234041097a6e"
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Post Not Found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 406
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "پست مورد نظر پیدا نشد."
+        200:
+          description: "Remove all images from the post successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: 'تمامی تصاویر پست مورد نظر حذف شدند.'
+                  image:
+                    type: string
+                    example: "/images/postDef-720.jpg"
+                  post:
+                    type: string
+                    example: "63484eaaf02a234041097a6e"
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+  
+  /admin/removePostImage/{id}:
+    delete:
+      tags: ['Admin API - Post']
+      summary: "Remove Single Post's Images"
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                imagename:
+                  type: string
+                  example: "postimage_1665499760063-173839611-720.jpg"
+      parameters: 
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          example: "63484eaaf02a234041097a6e"
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Image Not Found in this Post"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "تصویر مورد نظر در این پست یافت نشد."
+        200:
+          description: "Remove all images from the post successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: 'postimage_1665499760063-173839611-720.jpg با موفقیت از تصاویر پست مربوطه حذف شد.'
+                  images:
+                    type: array
+                    items:
+                      type: string
+                      example: ["/upload/images/2022/10/13/postimage_1665683114333-85675123-720.jpeg","/upload/images/2022/10/15/postimage_1665819545685-261522408-720.jpg"]
+                  post:
+                    type: string
+                    example: "63484eaaf02a234041097a6e"
+        400:
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "فایلی برای پاک کردن یافت نشد."
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+  
+  /admin/removePostLink/{id}:
+    delete:
+      tags: ['Admin API - Post']
+      summary: "Remove Post's Link"
+      security:
+        - BearerAuth: []
+      parameters: 
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          example: "63484eaaf02a234041097a6e"
+      - in: query
+        name: postlink
+        required: true
+        schema:
+          type: string
+          example: "634984b4892dfd7e60fe8cd2"
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Link Not Found in this Post"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "لینک مربوطه پیدا نشد."
+        200:
+          description: "Remove link from the post successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: 'Samsung S21 با موفقیت حذف شد.'
+        406:
+          description: "Not Acceptable"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 406
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "شما مجاز به اعمال تغییرات در این پست نیستید."
+
