@@ -39,7 +39,30 @@ class pageController extends Controller {
                 {
                     path: 'links',
                     select: ['-__v']
-                }
+                },
+                {
+                    path: 'comments',
+                    select: ['comment','parent','approved'],
+                    match : {'approved' : true , 'parent': null},
+                    populate : [
+                        {
+                            path: 'author',
+                            select : ['name','family']
+                        },
+                        {
+                            path: 'comments',
+                            match : {'approved' : true},
+                            select: ['comment','parent','approved'],
+                            populate : [
+                                {
+                                    path: 'author',
+                                    select : ['name','family']
+                                }
+                            ]
+                        }
+                    ]
+
+                },
             ]
         });
 
@@ -99,7 +122,7 @@ class pageController extends Controller {
 
         // if(req?.params?.id) this.isMongoId(req.params.id,res);
 
-        let pageId = req.params.id;
+        let pageId = req.params.page;
         let owner = req.user.id
 
         let page = await pageModel.findOne({_id: pageId, owner});
@@ -140,15 +163,10 @@ class pageController extends Controller {
     }
 
     async removePage(req, res, next) {
-        try { // Check ID
-            this.isMongoId(req ?. params ?. id);
-
-            // Find page
-            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id}); // .populate('owner').exec();
-            if (! page) 
-                return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'), res);
-            
-
+        try {
+            let checkOwnershipOfPageError = undefined;
+            let page = await this.checkOwnershipOfPage(req).catch(err => checkOwnershipOfPageError = err);
+            if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError,res);
 
             // Remove all sub posts in page.posts
             // page.posts.forEach(async (post)=>{
@@ -173,15 +191,11 @@ class pageController extends Controller {
     }
 
     async removePageImage(req, res, next) {
-        try { // Check ID
-            this.isMongoId(req ?. params ?. id);
-
-            // Find page
-            let page = await pageModel.findOne({owner: req.user.id, _id: req.params.id}); // .populate('owner').exec();
-            if (! page) 
-                return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'), res);
-            
-
+        try { 
+            // Find page and check page ownership
+            let checkOwnershipOfPageError = undefined;
+            let page = await this.checkOwnershipOfPage(req).catch(err => checkOwnershipOfPageError = err);
+            if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError,res);
 
             if (page.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
                 Object.values(page.images).forEach(image => {

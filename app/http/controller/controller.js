@@ -81,15 +81,15 @@ class Controller {
     checkOwnerShipOfPost(req) {
         return new Promise(async (resolve, reject) => {
             // let pageId = req.params.page;
-            let postId = req.params.id;
+            let postId = req?.params?.post || req?.query?.post
             let owner = req.user.id;
 
             // Find Post
             let post = await postModel.findById(postId).populate({path: 'page', select: ['owner', '_id']}).exec();
 
             // Check ownership of post
-            if (! post) 
-                return reject(createHttpError.NotFound('پست مورد نظر پیدا نشد.'));
+            // if (! post) 
+            //     return reject(createHttpError.NotFound('پست مورد نظر پیدا نشد.'));
                 
             if (post?.page?.owner != owner) 
                 return reject(createHttpError.NotAcceptable('این پست متعلق به شما نیست.'));
@@ -101,11 +101,11 @@ class Controller {
     checkOwnershipOfPage(req){
         return new Promise(async (resolve,reject)=>{
                 let owner = req.user.id;
-                let pageId = req.params.page;
+                let pageId = req?.params?.page || req?.query?.page;
 
                 let page = await pageModel.findOne({owner, _id: pageId});
                 if (! page) 
-                    reject(createHttpError.NotAcceptable('این پست متعلق به شما نیست.'))
+                    reject(createHttpError.NotAcceptable('این صفحه متعلق به شما نیست.'))
                 resolve(page);
             })
         }

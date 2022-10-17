@@ -14,7 +14,7 @@ const pageSchema = Schema({
 },{timestamps: true , toJSON: { virtuals: true}});
 
 pageSchema.virtual('posts',{
-    ref: 'post',
+    ref: 'Post',
     localField : '_id',
     foreignField : 'page'
 });

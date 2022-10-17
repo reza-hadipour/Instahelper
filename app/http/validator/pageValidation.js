@@ -58,11 +58,11 @@ class pageValidation extends Validator {
     }
     editPage() {
         return [
-            param('id')
+            param('page')
             .notEmpty()
             .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
             .custom(async (pageId, {req}) => {
-                if (!this.isMongoId(pageId)) 
+                if (!Validator.isMongoId(pageId)) 
                     throw new Error('آی دی صفحه معتبر نمی باشد.');
                 
                 let page = await pageModel.findOne({_id: pageId, owner: req.user.id});
@@ -83,6 +83,19 @@ class pageValidation extends Validator {
                         throw new Error(`حجم تصویر نباید از ${CONSTS.PAGE_MAX_FILE_SIZE / 1048576} مگابایت بیشتر باشد.`);
                     }
                 }
+            })
+        ]
+    }
+
+    removePageImage() {
+        return [
+            param('page')
+            .notEmpty()
+            .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
+            .custom(async (pageId, {req}) => {
+                if (!Validator.isMongoId(pageId)) 
+                    throw new Error('شناسه صفحه معتبر نمی باشد.');
+                return true;
             })
         ]
     }

@@ -1,0 +1,25 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const commentSchema = new Schema({
+    author : {type: mongoose.Types.ObjectId, required: true, ref: 'User'},
+    comment : {type: String, required: true},
+    parent: {type: mongoose.Types.ObjectId, default: null, ref: 'Comment'},
+    post: {type: mongoose.Types.ObjectId, required: true ,ref: 'Post'},
+    approved : {type: Boolean, default: false}
+},{timestamps: true, toJSON: {virtuals: true}});
+
+commentSchema.virtual('comments',{
+    ref: 'Comment',
+    localField: '_id',
+    foreignField : 'parent'
+});
+
+
+commentSchema.methods.approve = async function () {
+    this.approved = true;
+    await this.save();
+    
+}
+
+module.exports = new mongoose.model('Comment',commentSchema);

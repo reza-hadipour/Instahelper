@@ -10,12 +10,14 @@ const Controller = require('../controller');
 const pageModel = require('../../../models/pageModel');
 const postModel = require('../../../models/postModel');
 const postLinkModel = require('../../../models/postLinkModel');
+const commentModel = require('../../../models/commentModel');
 
 // Helper
 const helpers = require('../../../../helpers');
 
 'use strict';
 class postController extends Controller {
+
 
     async addPost(req, res, next) {
         
@@ -263,9 +265,14 @@ class postController extends Controller {
     async addPostImage(req, res, next) {
 
         try {
-            // if (!await this.validationData(req)) {
-            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-            // }
+            if (!await this.validationData(req)) {
+                if (req ?. files ?. length > 0) { // Remove the file if it was stored
+                    for (const item of req.files) {
+                        fs.unlinkSync(item.path);
+                    }
+                }
+                return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            } 
 
             let checkOwnerShipOfPostError = undefined;
             let post = await this.checkOwnerShipOfPost(req).catch(err => {
@@ -344,9 +351,11 @@ class postController extends Controller {
             //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             // }
 
+            let checkOwnerShipOfPostError = undefined;
             let post = await this.checkOwnerShipOfPost(req).catch(err => {
-                return this.errorResponse(err, res);
+                checkOwnerShipOfPostError = err;
             });
+            if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
 
             if(post){
                 let imageName = req?.body?.imagename;
@@ -398,9 +407,12 @@ class postController extends Controller {
             //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             // }
 
+            let checkOwnerShipOfPostError = undefined;
             let post = await this.checkOwnerShipOfPost(req).catch(err => {
-                return this.errorResponse(err, res);
+                checkOwnerShipOfPostError = err;
             });
+            if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
+
 
             if (post) { // Unlink pics
                 post.images.forEach(image => {
@@ -429,8 +441,8 @@ class postController extends Controller {
             // if (!await this.validationData(req)) {
             //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             // }
-
-            let postId = req.params.id;
+            
+            let postId = req?.params?.post;
             let owner = req.user.id;
 
             // Find Post
@@ -479,8 +491,51 @@ class postController extends Controller {
         }
     }
 
-    
+    async removeAllPostLink(req,res,next){
+        try {
+            // if (!await this.validationData(req)) {
+            //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
+            // }
 
+            let postId = req?.params?.post;
+            let owner = req.user.id;
+
+            // Find Post
+            let post = await postModel.findById(postId).populate([
+                {path: 'page', select: 'owner'},
+                {path: 'links'}]).exec();
+
+            // Check ownership of post
+            if (! post) 
+                return this.errorResponse(createHttpError.NotFound('پست مورد نظر پیدا نشد.'),res);
+
+            if (post ?. page ?. owner != owner) 
+                return this.errorResponse(createHttpError.NotAcceptable('شما مجاز به اعمال تغییرات در این پست نیستید.'),res);
+
+            if(post?.links?.length > 0){
+                post.links.forEach(async (link)=>{
+                    await link.remove()
+                });
+    
+                post.links = []
+                await post.save();
+                return res.json({
+                    ...this.successPrams(),
+                    message: `تمام لینک ها حذف شدند.`
+                });
+            }else{
+                return res.json({
+                    ...this.successPrams(),
+                    message: `تمام لینک ها حذف شدند.`
+                });
+            }
+        
+        }catch(error){
+            next(error);
+        }
+    }
+
+    
     async #imageResize(image) {
         let imageInfo = path.parse(image.path);
         let imageAddress = '';
