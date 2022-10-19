@@ -26,9 +26,11 @@ class postController extends Controller {
 
         let postId = req?.params?.post;
 
+        let checkOwnerShipOfPostError = undefined;
         let post = await this.checkOwnerShipOfPost(req).catch(err => {
-            return this.errorResponse(err, res);
+            checkOwnerShipOfPostError = err;
         });
+        if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
 
         let comment = new commentModel({
             author : req.user.id,

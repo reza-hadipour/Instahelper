@@ -13,7 +13,7 @@ const { validation } = require('../../../http/middleware/adminValidation/validat
 // Validation
 const {addPage, editPage, showPosts, removePageImage} = require('../../../http/validator/pageValidation');
 const {addPost, editPost, removePost, addPostImage, removePostImage, removePostLink, removeAllPostLink} = require('../../../http/validator/postValidation');
-const {showUnapprovedComments, approveAllComment , approveComment} = require('../../../http/validator/commentValidation');
+const {showUnapprovedComments, approveAllComment , approveComment, removeComment, removeAllComments} = require('../../../http/validator/commentValidation');
 
 
 router.get('/', (req, res, next) => {
@@ -43,5 +43,7 @@ router.delete('/removePostLinks/:post', removeAllPostLink(), validation, postCon
 router.get('/unapprovedComments/',showUnapprovedComments(), validation,commentController.showUnapprovedComments)
 router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
 router.patch('/approveAllComments',approveAllComment(), validation, commentController.approveAllComments)
+router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)
+router.delete('/removeAllComments', removeAllComments(), validation, commentController.removeAllComments)
 
 module.exports = router;
