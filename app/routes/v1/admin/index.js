@@ -38,12 +38,11 @@ router.delete('/removePostImage/:post', removePostImage(), validation, postContr
 router.delete('/removePostLink/:post', removePostLink(), validation, postController.removePostLink);
 router.delete('/removePostLinks/:post', removeAllPostLink(), validation, postController.removeAllPostLink);
 
-
 // Comment Routes
-router.get('/unapprovedComments/',showUnapprovedComments(), validation,commentController.showUnapprovedComments)
-router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
+router.get('/showComments/',showUnapprovedComments(), validation,commentController.showComments)
+// router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
 router.patch('/approveAllComments',approveAllComment(), validation, commentController.approveAllComments)
-router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)
+// router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)
 router.delete('/removeAllComments', removeAllComments(), validation, commentController.removeAllComments)
 
 module.exports = router;

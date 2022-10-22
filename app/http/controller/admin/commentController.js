@@ -1,5 +1,7 @@
 const Controller = require("../controller");
 
+const isMongoID = require('validator/lib/isMongoId');
+
 
 //  Models
 const commentModel = require('../../../models/commentModel');
@@ -12,9 +14,10 @@ class CommentController extends Controller {
     async approveAllComments(req,res,next){
         let postId = req?.query?.post || undefined
         let pageId = req?.query?.page || undefined
+        let commentIds = req?.body?.comments || undefined
         let owner = req.user.id;
         let postIds = [];
-
+        let multiCommentIds = [];
 
         if(postId){
             // Check post ownership
@@ -41,7 +44,21 @@ class CommentController extends Controller {
                         postIds.push(post.id);
                     })
                 }
+        }else if(commentIds){
+            // Approve a group of comments
+            // console.log(typeof commentIds);
+            if (typeof commentIds == 'string'){
+                multiCommentIds = commentIds.split();   // for multiple ids
+            }else{
+                multiCommentIds = commentIds;   // for single id
+            }
+
+            // console.log(multiCommentIds);
+            if(!multiCommentIds.every(isMongoID)) {
+                return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
+            }
         }else{
+            // All comment of user
             let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
             pages.forEach(page => {
                 if(page?.posts?.length > 0){
@@ -51,21 +68,51 @@ class CommentController extends Controller {
                 }
             });
         }
-       
-        let comments = await commentModel.find({'approved': false, 'visible' : true ,'post' : {$in : postIds}});
-        
 
+        let comments;
+
+        // for muliple comments
+        if(commentIds != undefined){
+            comments = await commentModel.find({'approved': false, 'visible' : true, '_id' : {$in : multiCommentIds}})
+            .populate({
+                path: 'post',
+                populate : {
+                    path : 'page',
+                    select : 'owner'
+                }
+            }).exec();
+        }else{
+            comments = await commentModel.find({'approved': false, 'visible' : true, 'post' : {$in : postIds}});
+        }
+       
         if(comments?.length > 0){
             let countOfApproved = 0;
+            let postsChanged = {};
             comments.forEach(async (comment) => {
-                comment.approve();
-                countOfApproved += 1;
+                if(comment?.post?.page?.owner == owner){    // Check comment ownership
+                    countOfApproved += 1
+                    if( typeof postsChanged[comment.post._id] != 'number' ) {
+                        postsChanged[comment.post._id] = 1;
+                    }else{
+                        postsChanged[comment.post._id] += 1;
+                    }
+                    comment.approve();
+                }
             });
-            console.log('Total',countOfApproved);
+            // console.log('Total',countOfApproved);
+
+            // Update Post commentCount number
+            // console.log(postsChanged);
+            Object.keys(postsChanged).forEach(async (key)=>{
+                // console.log(key,postsChanged[key]);
+                let updatePosts = await postModel.findOneAndUpdate({"_id" : key},{$inc : {"commentCount" : postsChanged[key]}});
+                // console.log(updatePosts);
+            })
+            
             
             return res.json({
                 ...this.successPrams(),
-                message: `${countOfApproved} نظر تایید شد.`
+                message: (countOfApproved>0 )? `${countOfApproved} نظر تایید شد.` : 'هیچ نظری تایید نشد.'
             });
 
         }else{
@@ -112,6 +159,7 @@ class CommentController extends Controller {
         let commentIds = req?.body?.comments || undefined
         let owner = req.user.id;
         let postIds = [];
+        let multiCommentIds = [];
 
         if(postId){
             // Check post ownership
@@ -140,7 +188,17 @@ class CommentController extends Controller {
                 }
         }else if(commentIds){
             // Delete a group of comment IDs
+            // console.log(typeof commentIds);
+            if (typeof commentIds == 'string'){
+                multiCommentIds = commentIds.split();   // for multiple ids
+            }else{
+                multiCommentIds = commentIds;   // for single id
+            }
 
+            // console.log(multiCommentIds);
+            if(!multiCommentIds.every(isMongoID)) {
+                return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
+            }
         }else{
             let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
             pages.forEach(page => {
@@ -151,26 +209,48 @@ class CommentController extends Controller {
                 }
             });
         }
-       
-        let comment = await commentModel.find({'visible' : true, 'parent' : null ,'post' : {$in : postIds}})
-        .populate([
-            {
-                path: 'comments',
-                populate : {
-                    path: 'post'
+
+        let comment;
+
+        // for muliple comments
+        if(commentIds != undefined){
+            // Find comments based on ID
+            comment = await commentModel.find({'visible' : true, '_id' : {$in : multiCommentIds}})
+            .populate([
+                {
+                    path: 'comments',
+                    populate : {
+                        path: 'post'
+                    }
+                },
+                {
+                    path: 'post',
+                    populate : [{
+                        path : 'page',
+                        select : ['owner']
+                    }]
                 }
-            },
-            {
-                path: 'post',
-                populate : [{
-                    path : 'page',
-                    select : ['owner']
-                }]
-            }
-        ]);
-
-        // return res.json(comment);
-
+            ]);
+        }else{
+            // Find comments based on POST ID
+            comment = await commentModel.find({'visible' : true, 'parent' : null ,'post' : {$in : postIds}})
+            .populate([
+                {
+                    path: 'comments',
+                    populate : {
+                        path: 'post'
+                    }
+                },
+                {
+                    path: 'post',
+                    populate : [{
+                        path : 'page',
+                        select : ['owner']
+                    }]
+                }
+            ]);
+        }
+       
         if(comment.length > 0){
             let postsChanged = {};
             comment.forEach(async (parentComment) => {
@@ -186,21 +266,22 @@ class CommentController extends Controller {
                 // parentComment.visible = false;
                 // parentComment.save()
                 
-                let modifiedNumber = parentComment?.comments?.length || 0;
+                let modifiedNumber = parentComment?.comments?.length ?? 0;
+                await parentComment.hide();
+
                 if( typeof postsChanged[parentComment.post._id] != 'number' ) {
                     postsChanged[parentComment.post._id] = modifiedNumber + 1;
                 }else{
                     postsChanged[parentComment.post._id] += modifiedNumber + 1;
                 }
                 
-                await parentComment.hide();
             })
             
-            console.log(postsChanged);
+            // console.log(postsChanged);
             Object.keys(postsChanged).forEach(async (key)=>{
-                console.log(key,postsChanged[key]);
+                // console.log(key,postsChanged[key]);
                 let updatePosts = await postModel.findOneAndUpdate({"_id" : key},{$inc : {"commentCount" : (-1 * postsChanged[key])}});
-                console.log(updatePosts);
+                // console.log(updatePosts);
             })
 
 
@@ -261,12 +342,27 @@ class CommentController extends Controller {
   
     }
 
-    async showUnapprovedComments(req,res,next){
+    async showComments(req,res,next){
         let postId = req?.query?.post || undefined
         let pageId = req?.query?.page || undefined;
+        let approvedQuery = req?.query?.approved || 'all';
+        let approveCondition =  {};
         let owner = req.user.id;
         let postIds = [];
 
+        if(approvedQuery){
+            switch (approvedQuery) {
+                case 'true':
+                    approveCondition =  {'approved' : true};
+                    break;
+                case 'false':
+                    approveCondition =  {'approved' : false};
+                    break;
+                default:
+                    approveCondition =  {};
+                    break;
+            }
+        }
 
         if(postId){
             // Check post ownership
@@ -305,7 +401,7 @@ class CommentController extends Controller {
         }
 
        
-        let comments = await commentModel.find({'approved': false, 'visible': true, 'post' : {$in : postIds}},{},{sort: {'createdAt': 1}})
+        let comments = await commentModel.find({'visible': true, 'post' : {$in : postIds}, ...approveCondition},{},{sort: {'createdAt': 1}})
         .populate([
             {
                 path: 'author',

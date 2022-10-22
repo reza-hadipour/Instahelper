@@ -39,7 +39,7 @@ class postController extends Controller {
         });
 
         await comment.save();
-        await post.inc('comment');
+        // await post.inc('comment');
         return res.json(comment);
     }
 
@@ -59,7 +59,7 @@ class postController extends Controller {
         });
 
         await comment.save();
-        await post.inc('comment');
+        // await post.inc('comment');
         return res.json(comment);
     }
 

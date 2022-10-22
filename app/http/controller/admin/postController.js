@@ -132,10 +132,11 @@ class postController extends Controller {
             // if (!await this.validationData(req)) {
             //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             // }
-    
+            let checkOwnerShipOfPostError = undefined;
             let post = await this.checkOwnerShipOfPost(req).catch(err => {
-                return this.errorResponse(err, res);
+                checkOwnerShipOfPostError = err;
             });
+            if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
     
             if (req ?. body ?. title) 
                 req.body.slug = helpers.slug(req.body.title);
@@ -211,52 +212,95 @@ class postController extends Controller {
 
     }
 
+    removeLinks(links,res){
+        let postLinks = links;
+        console.log("postLinks: ",postLinks);
+        postLinkModel.deleteMany({_id : {$in : postLinks}})
+        .then( info => {
+            debugDB(info);
+            console.log('Delete postLin: ',info);
+        })
+        .catch(err=>{
+            debugDB(err);
+            return this.errorResponse(createHttpError.InternalServerError('خطا در حذف لینک های پست.'),res);
+        })
+    }
+
+    removeComments(comments,res){
+        let commentsIds = [];
+        comments.forEach(comment => {
+            commentsIds.push(comment['id']);
+        });
+
+        console.log("commentsIds: ",commentsIds);
+        commentModel.deleteMany({_id : {$in : commentsIds}})
+        .then( info => {
+            debugDB(info);
+            console.log('Delete comment: ',info);
+        })
+        .catch(err=>{
+            debugDB(err);
+            return this.errorResponse(createHttpError.InternalServerError('خطا در حذف نظرات پست.'),res);
+        })
+    }
+
     async removePost(req, res, next) {
         try {
             // if (!await this.validationData(req)) {
             //     return this.errorResponse(createHttpError.BadRequest(req.errors), res);
             // }
 
+            let checkOwnerShipOfPostError = undefined;
             let post = await this.checkOwnerShipOfPost(req)
             .catch(err => {
-                return this.errorResponse(err, res);
+                checkOwnerShipOfPostError = err;
             });
+            if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
+
+            post = await postModel.findById(req.params.post)
+            .populate([
+                {
+                    path: 'comments',
+                    select : ['id']
+                }
+            ]).exec();
+
 
             // remove links
             if(post?.links?.length > 0){
-                let postLinks = posts.links;
-                postLinkModel.deleteMany({_id : {$in : postLinks.toArray()}})
-                .then( info => {
-                    debugDB(info);
-                    console.log(info);
-                })
-                .catch(err=>{
-                    debugDB(err);
-                    return this.errorResponse(createHttpError.InternalServerError('خطا در حذف لینک های پست.'),res);
-                })
+                this.removeLinks(post.links,res);
             }
-            
 
             // remove comments
+            if(post?.comments?.length > 0){
+                this.removeComments(post.comments,res);
+            }
+
             // remove likes
 
-            // Remove all comments and likes in posts.comment
-            // post.comment.forEach(async (post)=>{
-            // removePost function
-            // await post.remove();
-            // console.log(`Remove ${post.comment}`);
-            // });
-
             // Remove all images
-            // if(page.thumb != CONSTS.PAGE_DEFAULT_THUBM){
-            //     Object.values(page.images).forEach(image=>{
-            //         fs.unlinkSync(`./public${image}`)
-            //     })
-            // }
+            if(post?.images?.length > 0){
+                post.images.forEach(image => {
+                    if(image != CONSTS.POST_DEFAULT_THUBM){
+                        try {
+                            fs.unlinkSync(`./public${image}`)
+                        } catch (error) {
+                            
+                        }
+                    }
+                })
+            }
 
-            // Remove the page
-            let result = await post.remove();
-            return res.json(result);
+            // Remove the post
+            await post.remove().then(info => {
+                return res.jso({
+                    ...this.successPrams(),
+                    message: `${info.title} با موفقیت حذف شد.`
+                });
+            }).catch(err => {
+                debugDB(err);
+                return this.errorResponse(createHttpError.InternalServerError('خطا در حذف پست.'),res);
+            })
         } catch (error) {
             next(error);
         }

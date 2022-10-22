@@ -21,6 +21,13 @@ const postSchema = Schema({
     commentCount: {type: Number, default: 0}
 },{timestamps: true , toJSON: {virtuals: true}});
 
+
+postSchema.virtual('comments',{
+    ref: 'Comment',
+    localField: '_id',
+    foreignField: 'post'
+})
+
 postSchema.methods.inc = async function(field = 'like' ,number = 1){
     switch (field) {
         case 'like':
@@ -52,12 +59,6 @@ postSchema.methods.dec = async function(field = 'like' ,number = 1){
     
     await this.save();
 }
-
-postSchema.virtual('comments',{
-    ref: 'Comment',
-    localField: '_id',
-    foreignField: 'post'
-})
 
 postSchema.method.path = function(){
     return `${this.page.path()}/${this.slug}`;
