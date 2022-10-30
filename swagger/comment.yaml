@@ -1,0 +1,312 @@
+paths:
+
+  /admin/showComments:
+      get:
+        tags: ['Admin API - Comment']
+        summary: "Show All user`s comments"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        - in: query
+          name: post
+          required: false
+          schema:
+            type: string
+            example: "6346d5debc0e5f5274a6e091"
+        - in: query
+          name: approved
+          description: "Show True | False | All comments."
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - true
+                - false
+                - all
+            example: "false"
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          200:
+            description: "Show all comments of user's contetnts successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    totalComments:
+                      type: integer
+                      example: "5"
+                    comments:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          author:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: 633c495129f15986cd60ba83
+                              name:
+                                type: string
+                                example: "Reza"
+                              family:
+                                type: string
+                                example: "Hadipour"
+                              email:
+                                type: string
+                                example: "user@email.com"
+                          comment:
+                            type: string
+                            example: "Good product."
+                          parent:
+                            type: string
+                            example: "635e3400ff7c2221e20c9640"
+                          post:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "635e338aff7c2221e20c9625"
+                              title:
+                                type: string
+                                example: "TV Sony"
+                              page:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                    example: "635e3362ff7c2221e20c960d"
+                                  owner:
+                                    type: string
+                                    example: "633c495129f15986cd60ba83"
+                                  username:
+                                    type: string
+                                    example: "theRahanik1"
+                                  title:
+                                    type: string
+                                    example: "رهانیک اصل"
+                          approved:
+                            type: boolean
+                            example: true
+                          visible:
+                            type: boolean
+                            example: true
+                        
+  /admin/approveComments:
+      patch:
+        tags: ['Admin API - Comment']
+        summary: "Approving comments"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        - in: query
+          name: post
+          required: false
+          schema:
+            type: string
+            example: "6346d5debc0e5f5274a6e091"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      type: string
+                    example: ["635e33f9ff7c2221e20c9636","635e33feff7c2221e20c963b"]
+                                        
+        responses:
+          404:
+            description: "Comment not found"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 404
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "نظری یافت نشد."
+          400:
+            description: "Unvalid commentId"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 400
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "شناسه نظرهای ارسالی صحیح نمی باشد."
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          500:
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "failed"
+                    statusCode:
+                      type: string
+                      example: 500
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "خطا در تایید نظرات"
+          200:
+            description: "The comments approved successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: string
+                      example: 200
+                    message:
+                      type: string
+                      example: "5 نظر تایید شد."
+
+  /admin/removeComments:
+    delete:
+      tags: ['Admin API - Comment']
+      summary: "Remove Post's Comments"
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        - in: query
+          name: post
+          required: false
+          schema:
+            type: string
+            example: "6346d5debc0e5f5274a6e091"
+      requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      type: string
+                    example: ["635e33f9ff7c2221e20c9636","635e33feff7c2221e20c963b"]
+      
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Comment not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "نظری یافت نشد."
+        200:
+          description: "The comments removed successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: "پیام مورد نظر حذف شد."  
+        400:
+          description: "Unvalid commentId"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 400
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "شناسه نظرهای ارسالی صحیح نمی باشد."
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+  

@@ -5,6 +5,7 @@ const { randomNumberGenerator } = require('../../../helpers');
 
 const isMongoID = require('validator/lib/isMongoId');
 const createHttpError = require('http-errors');
+const jwt = require('jsonwebtoken');
 
 // Models
 const pageModel = require('../../models/pageModel');
@@ -82,7 +83,7 @@ class Controller {
         return new Promise(async (resolve, reject) => {
             // let pageId = req.params.page;
             let postId = req?.params?.post || req?.query?.post
-            let owner = req.user.id;
+            let owner = req?.user?.id || undefined;
 
             // Find Post
             let post = await postModel.findById(postId).populate({path: 'page', select: ['owner', '_id']}).exec();
@@ -103,12 +104,20 @@ class Controller {
                 let owner = req.user.id;
                 let pageId = req?.params?.page || req?.query?.page;
 
-                let page = await pageModel.findOne({owner, _id: pageId});
+                let page = await pageModel.findById(pageId);
                 if (! page) 
+                    reject(createHttpError.NotFound('صفحه ای یافت نشد.'))
+
+                if (page?.owner != owner) 
                     reject(createHttpError.NotAcceptable('این صفحه متعلق به شما نیست.'))
+
                 resolve(page);
-            })
-        }
+        })
+    }
+
+    createTokne(userId){
+        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 604800});
+    }
     
 }
 

@@ -261,3 +261,205 @@ paths:
                   message:
                     type: string
                     example: "تصویر صفحه مورد نظر با موفقیت پاک شد."
+
+  /admin/removePage/{page}:
+    delete:
+      tags: ['Admin API - Page']
+      summary: "Remove page"
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Page not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "صفحه مورد نظر پیدا نشد."
+        200:
+          description: "The page removed successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: "صفحه با موفقیت حذف شد."
+                  Page:
+                    type: string
+                    example: "635e3362ff7c2221e20c960d"
+        400:
+          description: "Unvalid pageId"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 400
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "شناسه صفحه معتبر نمی باشد."
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 500
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "خطا در حذف صفحه"
+
+  /admin/activationPage/{page}/{activation}:
+    patch:
+      tags: ['Admin API - Page']
+      summary: "Managing the activity of page"
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        - in: path
+          name: activation
+          description: "Default False"
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - true
+                - false
+            example: "true"
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Page not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "صفحه مورد نظر پیدا نشد."
+        200:
+          description: "The page activity status chenged successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: "صفحه با موفقیت فعال / غیرفعال شد."
+                  Page:
+                    type: string
+                    example: "635e3362ff7c2221e20c960d"
+        400:
+          description: "Unvalid pageId"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 400
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "شناسه صفحه معتبر نمی باشد."
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 500
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "خطا در تغییر وضعیت صفحه"

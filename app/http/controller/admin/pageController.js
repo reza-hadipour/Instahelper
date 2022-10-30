@@ -2,9 +2,11 @@ const createHttpError = require('http-errors');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const jwt = require('jsonwebtoken');
 
 // controller
 const Controller = require('../controller');
+const {removePost} = require('./postController');
 
 // Models
 const pageModel = require('../../../models/pageModel');
@@ -12,24 +14,28 @@ const postModel = require('../../../models/postModel');
 
 // Helper
 const helpers = require('../../../../helpers');
+const axios = require('axios');
+const { NOTFOUND } = require('dns');
 
 'use strict';
 class pageController extends Controller {
 
     async showPosts(req,res,next){
 
-        this.checkOwnershipOfPage(req).catch(err => {
-            return this.errorResponse(err, res);
+        let checkOwnershipOfPageError = undefined;
+        let page = await this.checkOwnershipOfPage(req).catch(err => {
+            checkOwnershipOfPageError = err;
         });
+        if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError, res);
 
         let pageId = req.params.page;
 
-        let page = req.query.page || 1;
+        let pageNumber = req.query.page || 1;
         let limit = req.query.limit || 5;
 
         let posts = await postModel.paginate({page: pageId},{
             select : ['-id','-createdAt','-__v','-likes'],
-            page,
+            pageNumber,
             limit, 
             populate : [
                 {
@@ -139,8 +145,6 @@ class pageController extends Controller {
         // prevent edit username
         if (req ?. body ?. username) 
             delete req.body['username'];
-        
-
 
         let body = helpers.normalizeData(req.body);
 
@@ -149,11 +153,7 @@ class pageController extends Controller {
         // Remove old pictures if new picture was uploaded
         if (result.acknowledged === true) {
             if (req ?. file && page.thumb !== CONSTS.PAGE_DEFAULT_THUBM) {
-                Object.values(page.images).forEach(img => {
-                    try {
-                        fs.unlinkSync(`./public${img}`);
-                    } catch (err) {}
-                });
+                this.#removeImages(page.images);
             }
         } else {
             return this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش صفحه.'), res)
@@ -168,23 +168,71 @@ class pageController extends Controller {
             let page = await this.checkOwnershipOfPage(req).catch(err => checkOwnershipOfPageError = err);
             if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError,res);
 
+            if( page?.active != true) return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر پیدا نشد.'),res)
+
+            let owner = req?.user?.id || undefined;
+            let pageId = req?.params?.page || undefined;
+
+            page = await pageModel.findById(pageId).populate('posts').exec();
             // Remove all sub posts in page.posts
-            // page.posts.forEach(async (post)=>{
-            // removePost function
-            // await post.remove();
-            // console.log(`Remove ${post}`);
-            // });
+
+            if(page?.posts?.length > 0){
+                await this.#removePagesPost(page.posts, owner);
+            }
 
             // Remove all images
-            if (page.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
-                Object.values(page.images).forEach(image => {
-                    fs.unlinkSync(`./public${image}`)
-                })
+            if (page?.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
+                this.#removeImages(page?.images);
             }
 
             // Remove the page
-            let result = await page.remove();
-            return res.json(result);
+            page.remove()
+            .then( () => {
+                return res.json({
+                    ...this.successPrams(),
+                    message: 'صفحه با موفقیت حذف شد.',
+                    page: page._id
+                });
+            })
+            .catch( err => {
+                debugDB(err);
+                return this.errorResponse(createHttpError.InternalServerError('خطا در حذف صفحه'),res);
+            })
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async activationPage(req, res, next) {
+        try {
+            let checkOwnershipOfPageError = undefined;
+            let page = await this.checkOwnershipOfPage(req).catch(err => checkOwnershipOfPageError = err);
+            if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError,res);
+
+            let owner = req?.user?.id || undefined;
+            let pageId = req?.params?.page || undefined;
+            let activation = req?.params?.activation || false;
+
+            page = await pageModel.findById(pageId).populate('posts').exec();
+            
+            // Deactive all sub posts in page.posts
+            if(page?.posts?.length > 0){
+                this.#deactivePagesPost(page.posts, owner, activation);
+            }
+
+            // Remove the page
+            page.activate(activation)
+            .then( () => {
+                return res.json({
+                    ...this.successPrams(),
+                    message: (activation == 'true') ? 'صفحه با موفقیت فعال شد.' : 'صفحه با موفقیت غیرفعال شد.',
+                    page: page._id
+                });
+            })
+            .catch( err => {
+                debugDB(err);
+                return this.errorResponse(createHttpError.InternalServerError('خطا در تغییر وضعیت صفحه'),res);
+            })
         } catch (error) {
             next(error);
         }
@@ -198,9 +246,7 @@ class pageController extends Controller {
             if(checkOwnershipOfPageError) return this.errorResponse(checkOwnershipOfPageError,res);
 
             if (page.thumb != CONSTS.PAGE_DEFAULT_THUBM) {
-                Object.values(page.images).forEach(image => {
-                    fs.unlinkSync(`./public${image}`)
-                })
+                this.#removeImages(page?.images);
             }
 
             let images = {}
@@ -226,7 +272,72 @@ class pageController extends Controller {
             next(error);
         }
     }
+    
+    #removePagesPostOLD(posts, owner){
+        let accessToken = this.createTokne(owner);
+        
+        posts.forEach(async (post)=>{
+            let result = await axios.delete(`http://${configs.host}:${configs.port}/v${configs.apiVersion}/admin/removePost/${post._id}`,{
+                headers : {'Authorization': `bearer ${accessToken}`}
+            }).catch( error => {
+                debug(error);
+                // return new Error('خطا در حذف پست های صفحه');
+            });
+            console.log(result?.data);
+            // if(result?.data?.statusCode != 200) throw new Error('خطا در حذف پست های صفحه');
+        });
+    }
 
+    async #removePagesPost(posts, owner){
+        let accessToken = this.createTokne(owner);
+        let postIds = [];
+        // posts.forEach(async (post)=>{
+        //     postIds.push()
+        //     // if(result?.data?.statusCode != 200) throw new Error('خطا در حذف پست های صفحه');
+        // });
+
+        postIds = posts.map((post)=> post._id );
+
+        let result = await axios.delete(
+            `http://${configs.host}:${configs.port}/v${configs.apiVersion}/admin/removePost`
+            ,{  //`http://${configs.host}:${configs.port}/v${configs.apiVersion}/admin/removePost/${post._id}`
+                headers : {
+                    'Authorization': `bearer ${accessToken}`,
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                data : {
+                    post : postIds
+                }
+            }).catch( error => {
+                debug(error);
+                // return new Error('خطا در حذف پست های صفحه');
+            });
+            console.log(result?.data);
+    }
+    
+    #deactivePagesPost(posts, owner, activation){
+        let accessToken = this.createTokne(owner);
+        
+        posts.forEach(async (post)=>{
+            await post.activate(activation)
+            .catch( error => {
+                debug(error);
+                // return new Error('خطا در حذف پست های صفحه');
+            });
+            
+            // if(result?.data?.statusCode != 200) throw new Error('خطا در حذف پست های صفحه');
+        });
+    }
+
+    #removeImages(images){
+        Object.values(images).forEach(image => {
+            try {
+                fs.unlinkSync(`./public${image}`)
+            } catch (error) {
+                debug(error);
+            }
+        })
+    }
 
     async #imageResize(image) {
         let imageInfo = path.parse(image.path);

@@ -10,7 +10,8 @@ const pageSchema = Schema({
     images : {type: Object},
     instagramURL: {type: String},
     followers : [{ type: mongoose.Types.ObjectId,default: null, ref: 'User'}],
-    followersNum : {type: Number, default: 0}
+    followersNum : {type: Number, default: 0},
+    active : {type: Boolean, default: true}
 },{timestamps: true , toJSON: { virtuals: true}});
 
 pageSchema.virtual('posts',{
@@ -18,6 +19,11 @@ pageSchema.virtual('posts',{
     localField : '_id',
     foreignField : 'page'
 });
+
+pageSchema.methods.activate = async function(status = false){
+    this.active = status;
+    await this.save();
+}
 
 pageSchema.methods.inc = async function(number = 1){
     this.followersNum += number;

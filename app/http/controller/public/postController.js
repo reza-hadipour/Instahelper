@@ -52,7 +52,7 @@ class postController extends Controller {
         });
 
         let comment = new commentModel({
-            author : req.user.id,
+            author : req?.user?.id,
             post: postId,
             comment : req.body.comment,
             parent: parentComment

@@ -522,3 +522,93 @@ paths:
                         type: string
                         example: "شما مجاز به اعمال تغییرات در این پست نیستید."
 
+  /admin/removePost:
+    delete:
+      tags: ['Admin API - Post']
+      summary: "Remove Post"
+      security:
+        - BearerAuth: []
+      parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        - in: query
+          name: post
+          required: false
+          schema:
+            type: string
+            example: "635e3370ff7c2221e20c9615"
+      requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  post:
+                    type: array
+                    items:
+                      type: string
+                    example: ["635e3370ff7c2221e20c9615","635e3382ff7c2221e20c961d"]
+      
+      responses:
+        401:
+          $ref: "#/components/responses/401Unauthorized"
+        404:
+          description: "Post not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 404
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "پستی یافت نشد."
+        200:
+          description: "The post removed successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  statusCode:
+                    type: string
+                    example: 200
+                  message:
+                    type: string
+                    example: "پست با موفقیت حذف شد."  
+        400:
+          description: "Unvalid postId"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "failed"
+                  statusCode:
+                    type: string
+                    example: 400
+                  Error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "شناسه پست های ارسالی صحیح نمی باشد."
+        406:
+          $ref: "#/components/responses/406NotAcceptablePostAuthorization"

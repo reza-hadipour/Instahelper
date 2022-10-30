@@ -11,7 +11,7 @@ const createHttpError = require("http-errors");
 
 class CommentController extends Controller {
     
-    async approveAllComments(req,res,next){
+    async approveComments(req,res,next){
         let postId = req?.query?.post || undefined
         let pageId = req?.query?.page || undefined
         let commentIds = req?.body?.comments || undefined
@@ -47,8 +47,9 @@ class CommentController extends Controller {
         }else if(commentIds){
             // Approve a group of comments
             // console.log(typeof commentIds);
+
             if (typeof commentIds == 'string'){
-                multiCommentIds = commentIds.split();   // for multiple ids
+                multiCommentIds.push(...commentIds.split(','))   // for multiple ids
             }else{
                 multiCommentIds = commentIds;   // for single id
             }
@@ -59,14 +60,18 @@ class CommentController extends Controller {
             }
         }else{
             // All comment of user
-            let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
-            pages.forEach(page => {
-                if(page?.posts?.length > 0){
-                    page.posts.forEach((post)=>{
-                        postIds.push(post.id);
-                    })
-                }
-            });
+
+            // Dont let approve all comments
+            return this.errorResponse(createHttpError.BadRequest('کامنت های مورد نظر خود را وارد کنید.'),res);
+
+            // let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
+            // pages.forEach(page => {
+            //     if(page?.posts?.length > 0){
+            //         page.posts.forEach((post)=>{
+            //             postIds.push(post.id);
+            //         })
+            //     }
+            // });
         }
 
         let comments;
@@ -82,7 +87,14 @@ class CommentController extends Controller {
                 }
             }).exec();
         }else{
-            comments = await commentModel.find({'approved': false, 'visible' : true, 'post' : {$in : postIds}});
+            comments = await commentModel.find({'approved': false, 'visible' : true, 'post' : {$in : postIds}})
+            .populate({
+                path: 'post',
+                populate : {
+                    path : 'page',
+                    select : 'owner'
+                }
+            }).exec();
         }
        
         if(comments?.length > 0){
@@ -121,7 +133,7 @@ class CommentController extends Controller {
   
     }
 
-    async approveComment(req,res,next){
+    async approveCommentOLD(req,res,next){
         let commentId = req?.params?.comment || undefined
         let owner = req.user.id;
        
@@ -153,7 +165,7 @@ class CommentController extends Controller {
   
     }
 
-    async removeAllComments(req,res,next){
+    async removeComments(req,res,next){
         let postId = req?.query?.post || undefined
         let pageId = req?.query?.page || undefined
         let commentIds = req?.body?.comments || undefined
@@ -190,7 +202,7 @@ class CommentController extends Controller {
             // Delete a group of comment IDs
             // console.log(typeof commentIds);
             if (typeof commentIds == 'string'){
-                multiCommentIds = commentIds.split();   // for multiple ids
+                multiCommentIds.push(...commentIds.split(','));   // for multiple ids
             }else{
                 multiCommentIds = commentIds;   // for single id
             }
@@ -200,14 +212,18 @@ class CommentController extends Controller {
                 return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
             }
         }else{
-            let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
-            pages.forEach(page => {
-                if(page?.posts?.length > 0){
-                    page.posts.forEach((post)=>{
-                        postIds.push(post.id);
-                    })
-                }
-            });
+            // Remove All Comments
+            // Dont let approve all comments
+            return this.errorResponse(createHttpError.BadRequest('کامنت های مورد نظر خود را وارد کنید.'),res);
+
+            // let pages = await pageModel.find({owner}).populate({path : 'posts'}).exec();
+            // pages.forEach(page => {
+            //     if(page?.posts?.length > 0){
+            //         page.posts.forEach((post)=>{
+            //             postIds.push(post.id);
+            //         })
+            //     }
+            // });
         }
 
         let comment;
@@ -296,7 +312,7 @@ class CommentController extends Controller {
   
     }
 
-    async removeComment(req,res,next){
+    async removeCommentOLD(req,res,next){
         let commentId = req?.params?.comment || undefined
         let owner = req.user.id;
        
@@ -426,7 +442,8 @@ class CommentController extends Controller {
             res.json({
                 ...this.successPrams(),
                 'totalComments' : 0,
-                message: 'نظر تایید نشده ای پیدا نشد.'})
+                comments: []
+            })
         }
     }
 

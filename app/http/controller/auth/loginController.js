@@ -1,7 +1,7 @@
 const Controller = require("../controller");
 const createHttpError = require("http-errors");
 const {validationResult} = require('express-validator');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 const JWTR = require('jwt-redis').default;
 
 const { normalizeData } = require("../../../../helpers");
@@ -30,7 +30,7 @@ class loginController extends Controller{
             if(!user?.verifyed) return this.errorResponse(createHttpError.Unauthorized('حساب کاربری تایید نشده است. مجدد درخواست ارسال کد یکبارمصرف را بدهید.'),res);
 
             ////// >>>>>>>>>>>>> Create Token
-            let accessToken = this.#createTokne(user.id);
+            let accessToken = this.createTokne(user.id);
             let refreshToken = await this.#createRefreshTokne(user);
 
             // Store Refresh Token in User
@@ -106,7 +106,7 @@ class loginController extends Controller{
                 
                     if(!user) return this.errorResponse(createHttpError.NotFound('کاربر یافت نشد.'),res);
 
-                    let accessToken = this.#createTokne(user.id);
+                    let accessToken = this.createTokne(user.id);
 
                     return res.json({
                         ...this.successPrams(),
@@ -167,7 +167,7 @@ class loginController extends Controller{
             }
 
             ////// >>>>>>>>>>>>> Create Token
-            let accessToken = this.#createTokne(user.id)
+            let accessToken = this.createTokne(user.id)
             let refreshToken = await this.#createRefreshTokne(user);
 
             if(!accessToken || !refreshToken){
@@ -234,9 +234,7 @@ class loginController extends Controller{
         return await this.jwtr.sign(payload,configs.jwt.refreshTokenSecret,{expiresIn : "365 days"});
     }
 
-    #createTokne(userId){
-        return jwt.sign({userId},configs.jwt.accessTokenSecret,{expiresIn: 604800});
-    }
+    
 
     #setupJWTR(){
         this.jwtr = new JWTR(myRedisClient,{prefix: `${configs.applicationName}:RefreshToken:`});

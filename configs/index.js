@@ -5,6 +5,7 @@ module.exports = {
     applicationName : 'InstaHelper',
     port : process.env.APPLICATION_PORT,
     host: process.env.APPLICATION_HOST,
+    apiVersion : process.env.API_VERSION,
     database,
     jwt: {
         accessTokenSecret : process.env.ACCESS_SECRET_KEY,

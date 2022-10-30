@@ -11,9 +11,9 @@ const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage')
 const { validation } = require('../../../http/middleware/adminValidation/validation');
 
 // Validation
-const {addPage, editPage, showPosts, removePageImage} = require('../../../http/validator/pageValidation');
+const {addPage, editPage, removePage, showPosts, removePageImage, activationPage} = require('../../../http/validator/pageValidation');
 const {addPost, editPost, removePost, addPostImage, removePostImage, removePostLink, removeAllPostLink} = require('../../../http/validator/postValidation');
-const {showUnapprovedComments, approveAllComment , approveComment, removeComment, removeAllComments} = require('../../../http/validator/commentValidation');
+const {showUnapprovedComments, approveComment , removeComments} = require('../../../http/validator/commentValidation');
 
 
 router.get('/', (req, res, next) => {
@@ -24,14 +24,16 @@ router.get('/', (req, res, next) => {
 // Page routes
 router.get('/showPosts/:page',showPosts(), validation, pageController.showPosts);
 router.post('/addpage', uploadPage.single('pageimage'), addPage(), pageController.addPage);
-router.put('/editPage/:page', uploadPage.single('pageimage'), editPage(), pageController.editPage)
-router.delete('/removePage/:page', pageController.removePage)   // Unfinished
-router.delete('/removePageImage/:page', removePageImage(), validation, pageController.removePageImage)
+router.put('/editPage/:page', uploadPage.single('pageimage'), editPage(), pageController.editPage);
+router.delete('/removePage/:page',removePage(),validation, pageController.removePage);   // Unfinished
+router.patch('/activationPage/:page/:activation',activationPage(),validation, pageController.activationPage);   // Unfinished
+router.delete('/removePageImage/:page', removePageImage(), validation, pageController.removePageImage);
 
 // Post Routes
 router.post('/addPost/:page', uploadPost.array('postimage'), addPost(), postController.addPost);
 router.put('/editPost/:post', editPost(), validation, postController.editPost);
-router.delete('/removePost/:post', removePost(), validation, postController.removePost);    // Unfinished
+// router.delete('/removePost/:post', removePost(), validation, postController.removePost);    // Unfinished
+router.delete('/removePost', removePost(), validation, postController.removePost);    // Unfinished
 router.post('/addPostImage/:post', uploadPost.array('postimage'), addPostImage(), postController.addPostImage);
 router.delete('/removePostImages/:post', removePost(), validation, postController.removeAllPostImages);
 router.delete('/removePostImage/:post', removePostImage(), validation, postController.removeOnePostImage);
@@ -41,8 +43,8 @@ router.delete('/removePostLinks/:post', removeAllPostLink(), validation, postCon
 // Comment Routes
 router.get('/showComments/',showUnapprovedComments(), validation,commentController.showComments)
 // router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
-router.patch('/approveAllComments',approveAllComment(), validation, commentController.approveAllComments)
+router.patch('/approveComments',approveComment(), validation, commentController.approveComments)
 // router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)
-router.delete('/removeAllComments', removeAllComments(), validation, commentController.removeAllComments)
+router.delete('/removeComments', removeComments(), validation, commentController.removeComments)
 
 module.exports = router;

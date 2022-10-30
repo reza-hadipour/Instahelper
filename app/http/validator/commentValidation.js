@@ -28,7 +28,7 @@ class commentValidation extends Validator {
             ]
     }
 
-    approveAllComment() {
+    approveComment() {
         return [
             query('page').custom(pageId => {
                 if(pageId){
@@ -49,7 +49,7 @@ class commentValidation extends Validator {
             ]
     }
 
-    approveComment() {
+    approveCommentOLD() {
         return [
             param('comment').notEmpty().withMessage('شناسه نظر را وارد کنید.')
             .custom(comment => {
@@ -63,7 +63,7 @@ class commentValidation extends Validator {
             ]
     }
 
-    removeComment() {
+    removeCommentOLD() {
         return [
             param('comment').notEmpty().withMessage('شناسه نظر را وارد کنید.')
             .custom(comment => {
@@ -77,7 +77,7 @@ class commentValidation extends Validator {
             ]
     }
 
-    removeAllComments() {
+    removeComments() {
         return [
             query('page').custom(pageId => {
                 if(pageId){

@@ -100,6 +100,33 @@ class pageValidation extends Validator {
         ]
     }
 
+    removePage() {
+        return [
+            param('page')
+            .notEmpty()
+            .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
+            .custom(async (pageId, {req}) => {
+                if (!Validator.isMongoId(pageId)) 
+                    throw new Error('شناسه صفحه معتبر نمی باشد.');
+                return true;
+            })
+        ]
+    }
+
+    activationPage() {
+        return [
+            param('page')
+            .notEmpty()
+            .withMessage('شناسه صفحه مورد نظر را وارد کنید.')
+            .custom(async (pageId, {req}) => {
+                if (!Validator.isMongoId(pageId)) 
+                    throw new Error('شناسه صفحه معتبر نمی باشد.');
+                return true;
+            })
+            
+        ]
+    }
+
 
 }
 

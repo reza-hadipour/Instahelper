@@ -3,7 +3,6 @@ const Controller = require("../controller");
 const userModel = require("../../../models/user");
 const resetPasswordModel = require('../../../models/resetPassword');
 const jwt = require("jsonwebtoken");
-const {JsonWebTokenError} = require('jsonwebtoken').JsonWebTokenError;
 
 class resetPassword extends Controller {
 

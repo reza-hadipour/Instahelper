@@ -136,7 +136,39 @@ class postValidation extends Validator {
 
 
     removePost() {
-        return [param('post').custom(this.#checkIdIsMongoId)]
+        // return [param('post').custom(this.#checkIdIsMongoId)]
+        return [
+            query('post')
+            .custom( postId => {
+                if (postId) {
+                    this.#checkIdIsMongoId(postId);
+                    return true;
+                }else {
+                    return true;
+                }
+            }),
+            query('page')
+            .custom( pageId => {
+                if (pageId) {
+                    this.#checkIdIsMongoId(pageId);
+                    return true;
+                }else {
+                    return true;
+                }
+            }),
+            body('post')
+            .custom((value,{req}) => {
+                if(!req?.query?.post && !req?.query?.page){
+                    if(!value) {
+                        throw new Error('حداقل یک شناسه برای حذف پست وارد کنید.')
+                    }else{
+                        return true;
+                    }
+                }else{
+                    return true;
+                }
+            })
+        ]
     }
     removePostImage() {
         return [
