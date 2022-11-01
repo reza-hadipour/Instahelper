@@ -2,7 +2,7 @@ let {body,check, param} = require('express-validator');
 const Validator = require('./validator');
 const jwt = require('jsonwebtoken');
 
-const userModel = require('../../models/user');
+const userModel = require('../../models/userModel');
 
 class userValidation extends Validator{
     checkRefreshToken(){

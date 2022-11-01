@@ -5,7 +5,7 @@ const {validationResult} = require('express-validator');
 const { randomNumberGenerator } = require("../../../../helpers");
 
 // Models
-const userModel = require('../../../models/user');
+const userModel = require('../../../models/userModel');
 
 class registerController extends Controller{
     async regiser(req,res,next){

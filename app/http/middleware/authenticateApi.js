@@ -18,6 +18,17 @@ class authenticateApi{
             next();
         })(req,res,next);
     }
+
+    handleNoResponse(req,res,next){
+        passport.authenticate('jwt',{session:false},(err,user,info)=>{
+            if(err || !user){
+                req.user = undefined;
+                return next();
+            }
+            req.user = user;
+            next();
+        })(req,res,next);
+    }
 }
 
 module.exports = new authenticateApi();

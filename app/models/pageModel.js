@@ -9,9 +9,10 @@ const pageSchema = Schema({
     thumb: {type: String},
     images : {type: Object},
     instagramURL: {type: String},
-    followers : [{ type: mongoose.Types.ObjectId,default: null, ref: 'User'}],
+    followers : [{ type: mongoose.Types.ObjectId, ref: 'User'}],
     followersNum : {type: Number, default: 0},
-    active : {type: Boolean, default: true}
+    active : {type: Boolean, default: true},
+    status : {type: String, default: 'public'}
 },{timestamps: true , toJSON: { virtuals: true}});
 
 pageSchema.virtual('posts',{

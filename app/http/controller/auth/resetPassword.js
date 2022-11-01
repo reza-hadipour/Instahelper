@@ -1,6 +1,6 @@
 const createHttpError = require("http-errors");
 const Controller = require("../controller");
-const userModel = require("../../../models/user");
+const userModel = require("../../../models/userModel");
 const resetPasswordModel = require('../../../models/resetPassword');
 const jwt = require("jsonwebtoken");
 

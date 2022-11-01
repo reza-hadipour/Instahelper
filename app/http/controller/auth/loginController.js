@@ -7,7 +7,7 @@ const JWTR = require('jwt-redis').default;
 const { normalizeData } = require("../../../../helpers");
 
 // Models
-const userModel = require('../../../models/user');
+const userModel = require('../../../models/userModel');
 const configs = require("../../../../configs");
 
 class loginController extends Controller{

@@ -13,6 +13,6 @@ const authenticateApi = require('../../http/middleware/authenticateApi');
 // router.use('/admin',authenticateApi.handle,adminRoutes);
 router.use('/admin',authenticateApi.handle ,adminRoutes);
 router.use('/auth', authenticationRoutes);
-router.use('/', authenticateApi.handle, publicRoutes);
+router.use('/', publicRoutes);
 
 module.exports = router;

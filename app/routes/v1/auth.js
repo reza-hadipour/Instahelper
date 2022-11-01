@@ -11,7 +11,7 @@ const resetPassword = require('../../http/controller/auth/resetPassword');
 const authenticateApi = require('../../http/middleware/authenticateApi');
 
 // Models
-const userModel = require('../../models/user');
+const userModel = require('../../models/userModel');
 
 // Validators
 const {checkRegister, checkGetOtp, checkOtp, checkLogin, checkRefreshToken, checkResetPassword, checkSendResetPassword} = require('../../http/validator/userValidation');

@@ -421,7 +421,7 @@ class CommentController extends Controller {
         .populate([
             {
                 path: 'author',
-                select : ['name','family','email']
+                select : ['name','family','email','fullname']
             },{
                 path: 'post',
                 select : ['title'],

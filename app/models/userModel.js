@@ -5,6 +5,7 @@ let bcrypt = require('bcrypt');
 const userSchema = Schema({
     name: {type: String},
     family: {type: String},
+    fullname : {type: String, default : ''},
     email: {type: String, unique: false, required: false},
     password: {type: String, required: false},
     mobile: {type: String ,  required:true , unique:false},
@@ -15,7 +16,8 @@ const userSchema = Schema({
     roles: [{type: String, default:'USER'}],
     refreshToken: {type: String, default: null},
     pages : [{type: mongoose.Types.ObjectId, ref: "page"}],
-    verifyed : {type: Boolean, default: false}
+    verifyed : {type: Boolean, default: false},
+    followings : [{type: mongoose.Types.ObjectId, ref : "page"}]
 },{timestamps: true, toJSON:{virtuals: true}});
 
 // userSchema.pre('save',function(next){
@@ -35,5 +37,13 @@ userSchema.methods.comparePassword = function(password){
     return bcrypt.compareSync(password,this.password);
 }
 
+// userSchema.virtual('fullname').get(function(){
+//     return `${this.name} ${this.family}`;
+// });
+
+userSchema.pre('save',function(next){
+    this.fullname = `${this.get('name')} ${this.get('family')}`;
+    next();
+})
 
 module.exports = new mongoose.model('User',userSchema)
