@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const paginate = require('mongoose-paginate');
 const Schema = mongoose.Schema;
 
 const commentSchema = new Schema({
@@ -26,5 +27,7 @@ commentSchema.methods.approve = async function () {
     await this.save();
     
 }
+
+commentSchema.plugin(paginate);
 
 module.exports = new mongoose.model('Comment',commentSchema);

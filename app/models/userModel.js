@@ -1,11 +1,12 @@
 let mongoose = require('mongoose');
+const paginate = require('mongoose-paginate');
 let Schema = mongoose.Schema;
 let bcrypt = require('bcrypt');
 
 const userSchema = Schema({
     name: {type: String},
     family: {type: String},
-    fullname : {type: String, default : ''},
+    // fullname : {type: String, default : ''},
     email: {type: String, unique: false, required: false},
     password: {type: String, required: false},
     mobile: {type: String ,  required:true , unique:false},
@@ -37,13 +38,15 @@ userSchema.methods.comparePassword = function(password){
     return bcrypt.compareSync(password,this.password);
 }
 
-// userSchema.virtual('fullname').get(function(){
-//     return `${this.name} ${this.family}`;
-// });
+userSchema.virtual('fullname').get(function(){
+    return `${this.name} ${this.family}`;
+});
 
 userSchema.pre('save',function(next){
     this.fullname = `${this.get('name')} ${this.get('family')}`;
     next();
 })
+
+userSchema.plugin(paginate);
 
 module.exports = new mongoose.model('User',userSchema)

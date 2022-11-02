@@ -100,6 +100,7 @@ class pageController extends Controller {
         }
 
         req.body.owner = req.user.id;
+        req.body.username = String(req.body.username).toLowerCase();
 
         let body = helpers.normalizeData(req.body);
         let newPage = new pageModel(body);
