@@ -11,7 +11,7 @@ const { validation } = require('../../../http/middleware/adminValidation/validat
 const authenticateApi = require('../../../http/middleware/authenticateApi');
 
 // Validators
-const {singlePage} = require('../../../http/validator/public/pages');
+const {addSubComment , addComment} = require('../../../http/validator/private/pages');
 
 
 
@@ -25,25 +25,29 @@ const {singlePage} = require('../../../http/validator/public/pages');
 
 // Show Latest Post of any Page
 
-// Show Following Pages
+// Show ONLY Following Pages
 router.get('/',authenticateApi.handle , pageController.exploreSubscribedPages);
 
 // Show Single Page Information and its posts
-router.get('/:username',authenticateApi.handleNoResponse, singlePage() ,validation , pageController.showSinglePage);
+router.get('/:username',authenticateApi.handleNoResponse, pageController.showSinglePage);
 
 // Show single Post
-router.get('/:page/:post',authenticateApi.handleNoResponse, postController.showSinglePost)    // Page status checking
-router.get('/:page/:post/comments',authenticateApi.handleNoResponse, postController.showSinglePostComments)
-router.get('/:page/:post/likes',authenticateApi.handleNoResponse, postController.showSinglePostLikes)
+// [:page > username , :post > slug]
+router.get('/:page/:post',authenticateApi.handleNoResponse, postController.showSinglePost);
+// Show Comments of single Post. Options: Query -> [page,limit,sublimit]
+router.get('/:page/:post/comments',authenticateApi.handle, postController.showSinglePostComments);
+// Show Who Like single Post. Options: Query -> [page,limit]
+router.get('/:page/:post/likes',authenticateApi.handle, postController.showSinglePostLikes);
 
-// Follow and Unfollow Single Page
-router.post('/follow/:username',authenticateApi.handle, singlePage() ,validation , pageController.followPage);
-router.post('/unfollow/:username',authenticateApi.handle, singlePage() ,validation , pageController.unfollowPage );
+// Like and Dislike
+router.put('/:page/:post/like',authenticateApi.handle, postController.likeSinglePost);
 
+// Follow/Unfollow Single Page
+router.post('/:username/follow',authenticateApi.handle, pageController.followPage);
 
 // Comment
-router.post('/addComment/:post',authenticateApi.handle ,postController.addComment);
-router.post('/addComment/:post/:comment',authenticateApi.handle ,postController.addSubComment)
+router.post('/addComment/:post',authenticateApi.handle ,addComment() ,validation ,postController.addComment);
+router.post('/addSubComment/:comment',authenticateApi.handle, addSubComment(),validation ,postController.addSubComment)
 
 // /:username/addComment
 // /:username/:slug/addComment

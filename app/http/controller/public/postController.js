@@ -15,9 +15,58 @@ const userModel = require('../../../models/userModel');
 
 // Helper
 const helpers = require('../../../../helpers');
+const e = require('express');
 
 'use strict';
 class postController extends Controller {
+
+    async likeSinglePost(req,res,next){
+        let username = String(req?.params?.page).toLowerCase() || undefined;
+        let slug = req?.params?.post || undefined;
+        let userId = req?.user?.id;
+
+        let page = await pageModel.findOne({username, 'active': true}).populate({
+            path : 'posts',
+            match : {slug , 'active': true},
+            sort : {'createdAt' : -1},
+            select : ['title','slug','likeCount','likes'],
+            perDocumentLimit : 1,
+        }).exec();
+
+        this.#checkPageSubscribtion(page,userId)
+            .then ( async ()=> {
+                if(page?.posts?.length > 0){
+                    let post = page.posts[0];
+                    let likeIdx = post.likes.indexOf(userId);
+                    let operation;
+                    if(likeIdx > -1){
+                        // Unlike
+                        post.likes.splice(likeIdx,1);
+                        await post.dec('like');
+                        operation = 'unlike';
+                    }else{
+                        // Big Like
+                        post.likes.push(userId);
+                        await post.inc('like');
+                        operation = 'like';
+                    }
+
+                    return res.json({
+                        ...this.successPrams(),
+                        'pageUsername' : page.username,
+                        'postTitle' : post.title,
+                        'postSlug' : post.slug,
+                        'message' : `${post.title} با موفقیت ${operation} شد.`
+                    })
+
+                }else{
+                    next();
+                }
+            })
+            .catch ( async (err) => {
+                return this.errorResponse(err,res)
+            });
+    }
 
     async showSinglePostLikes(req,res,next){
         let username = String(req?.params?.page).toLowerCase() || undefined;
@@ -60,7 +109,17 @@ class postController extends Controller {
                     }
                     return res.json(data);
                 }else{
-                    return res.json('No Comment');
+                    let data = {
+                        'pageUsername' : page.username,
+                        'postTitle' : post.title,
+                        'postSlug' : post.slug,
+                        'likes' : [],
+                        'page' : 1,
+                        'pages' : 1,
+                        'total' : 0,
+                        'limit' : 1,
+                    }
+                    return res.json(data);
                 }
                 
             }else{
@@ -120,6 +179,7 @@ class postController extends Controller {
                         });
         
                         let data = {
+                            ...this.successPrams(),
                             pageUsername : page.username,
                             postTitle : post.title,
                             postSlug : post.slug,
@@ -132,9 +192,19 @@ class postController extends Controller {
                         return res.json(data);
         
                     }else{
-                        return res.json('No Comment');
+                        let data = {
+                            ...this.successPrams(),
+                            'pageUsername' : page.username,
+                            'postTitle' : post.title,
+                            'postSlug' : post.slug,
+                            'comments' : [],
+                            'page' : 1,
+                            'pages' : 1,
+                            'total' : 0,
+                            'limit' : 1,
+                        }
+                        return res.json(data);
                     }
-                    
                 }else{
                     next();
                 }
@@ -216,50 +286,86 @@ class postController extends Controller {
     }
 
     async addComment(req,res,next){
-
-        if (!await this.validationData(req)) {
-            return this.errorResponse(createHttpError.BadRequest(req.errors), res);
-        }
-
         let postId = req?.params?.post;
+        let userId = req?.user?.id;
 
-        let checkOwnerShipOfPostError = undefined;
-        let post = await this.checkOwnerShipOfPost(req).catch(err => {
-            checkOwnerShipOfPostError = err;
-        });
-        if(checkOwnerShipOfPostError) return this.errorResponse(checkOwnerShipOfPostError, res);
+        let post = await postModel.findOne({'_id' : postId, 'active' : true})
+        .populate({
+            path : 'page',
+            select : ['followers', 'followersNum', 'status' , 'active', 'username'],
+            match : {'active' : true}
+        }).exec();
 
-        let comment = new commentModel({
-            author : req.user.id,
-            post: postId,
-            comment : req.body.comment
-        });
+        if(post?.page){
+            let page = post.page;
+            this.#checkPageSubscribtion(page,userId)
+            .then(async ()=>{
+                // return res.json(post);
+                let comment = new commentModel({
+                    author : req.user.id,
+                    post: postId,
+                    comment : req.body.comment
+                });
+                await comment.save();
+                return res.json({
+                    ...this.successPrams(),
+                    'comentId' : comment.id,
+                    'commentPost' : comment.post,
+                    'comment': comment.comment,
+                    message : 'نظر شما با موفقیت ثبت شد و پس از تایید شدن نمایش داده میشود.'
+                });
+            })
+            .catch( err => {
+                return this.errorResponse(err,res);
+            })
 
-        await comment.save();
-        // await post.inc('comment');
-        return res.json(comment);
+        }else{
+            return this.errorResponse(createHttpError.BadRequest('امکان ثبت نظر وجود ندارد.'),res);
+        }
     }
 
     async addSubComment(req,res,next){
-        let postId = req?.params?.post;
         let parentComment = req?.params?.comment;
+        let userId = req?.user?.id;
 
-        let post = await this.checkOwnerShipOfPost(req).catch(err => {
-            return this.errorResponse(err, res);
-        });
+        let parent = await commentModel.findOne({'_id': parentComment, 'approved' : true , 'visible' : true});
 
-        let comment = new commentModel({
-            author : req?.user?.id,
-            post: postId,
-            comment : req.body.comment,
-            parent: parentComment
-        });
+        let post = await postModel.findOne({'_id' : parent?.post, 'active' : true})
+        .populate({
+            path : 'page',
+            select : ['followers', 'followersNum', 'status' , 'active', 'username'],
+            match : {'active' : true}
+        }).exec();
 
-        await comment.save();
-        // await post.inc('comment');
-        return res.json(comment);
+        if(post?.page){
+            let page = post.page;
+            this.#checkPageSubscribtion(page,userId)
+            .then(async ()=>{
+                // return res.json(post);
+                let comment = new commentModel({
+                    author : req?.user?.id,
+                    post: parent?.post,
+                    comment : req.body.comment,
+                    parent: parentComment
+                });
+                await comment.save();
+                return res.json({
+                    ...this.successPrams(),
+                    'parent' : comment.parent,
+                    'comentId' : comment.id,
+                    'commentPost' : comment.post,
+                    'comment': comment.comment,
+                    message : 'نظر شما با موفقیت ثبت شد و پس از تایید شدن نمایش داده میشود.'
+                });
+            })
+            .catch( err => {
+                return this.errorResponse(err,res);
+            });
+        }else{
+            return this.errorResponse(createHttpError.BadRequest('امکان ثبت نظر وجود ندارد.'),res);
+        }
     }
-
+    
     async #checkPageSubscribtion(page,userId){
         return new Promise((resolve,reject)=>{
             if(page.status == 'private'){

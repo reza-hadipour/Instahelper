@@ -136,26 +136,16 @@ class pageController extends Controller{
     }
 
     async followPage(req,res,next){
-        let username = req?.params?.username;
+        let username = String(req?.params?.username).toLowerCase();
         let userId = req?.user?.id;
 
         //Check whether page is exists
-        let page = await pageModel.findOne({username, 'active' : true },'-owner -active -createdAt -updatedAt -__v')
-        .populate({
-            path : 'posts',
-            match : {'active' : true},
-            select : '-links -likes -updatedAt',
-            options  : {
-                sort : {'createdAt' : -1}
-            }
-        }).exec();
+        let page = await pageModel.findOne({username, 'active' : true },'-owner -active -createdAt -updatedAt -__v');
 
         if(page){
-            if(!page?.followers?.includes(userId)){
-                // let pageFollowers = page.followers;
-                // pageFollowers.push(userId);
-                // page.followers = pageFollowers;
-                // Array(page.followers).push(userId);
+            let followerIdx = page.followers.indexOf(userId);
+            if(followerIdx == -1){
+                // Follow the page
                 page.followers.push(userId);
                 await page.inc();
                 // await page.save();
@@ -163,55 +153,18 @@ class pageController extends Controller{
                     ...this.successPrams(),
                     message : `You follow ${page.title} Succesfully`
                 });
-            }
-
-            return res.json({
-                ...this.successPrams(),
-                message : `You have followed ${username} already.`
-            });
-
-        }else{
-            return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر یافت نشد.'),res);
-        }
-
-    }
-
-    async unfollowPage(req,res,next){
-        let username = req?.params?.username;
-        let userId = req?.user?.id;
-
-        //Check whether page is exists
-        let page = await pageModel.findOne({username, 'active' : true },'-owner -active -createdAt -updatedAt -__v')
-        .populate({
-            path : 'posts',
-            match : {'active' : true},
-            select : '-links -likes -updatedAt',
-            options  : {
-                sort : {'createdAt' : -1}
-            }
-        }).exec();
-
-        if(page){
-            let userIdx = page.followers.indexOf(userId);
-            if(userIdx > -1){
-                page.followers.splice(userIdx,1);
+            }else{
+                // Unfollow the page
+                page.followers.splice(followerIdx,1);
                 await page.inc(-1);
-                // await page.save();
                 return res.json({
                     ...this.successPrams(),
-                    message : `You unfollow ${page.title} Succesfully`
+                    message : `You Unfollow ${page.title} Succesfully`
                 });
             }
-
-            return res.json({
-                ...this.successPrams(),
-                message : `You have not followed ${username}.`
-            });
-
         }else{
             return this.errorResponse(createHttpError.NotFound('صفحه مورد نظر یافت نشد.'),res);
         }
-
     }
 
     async #getLtestPosts(page,pageNum,limit){
