@@ -5,6 +5,7 @@ const multer = require('multer');
 const pageController = require('../../../http/controller/admin/pageController');
 const postController = require('../../../http/controller/admin/postController');
 const commentController = require('../../../http/controller/admin/commentController');
+const requestsController = require('../../../http/controller/admin/requestsController');
 
 // Midllewares
 const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage');
@@ -20,7 +21,6 @@ router.get('/', (req, res, next) => {
     res.json('Private Routes');
 });
 
-
 // Page routes
 router.get('/showPosts/:page',showPosts(), validation, pageController.showPosts);
 router.post('/addpage', uploadPage.single('pageimage'), addPage(), pageController.addPage);
@@ -28,6 +28,11 @@ router.put('/editPage/:page', uploadPage.single('pageimage'), editPage(), pageCo
 router.delete('/removePage/:page',removePage(),validation, pageController.removePage);   // Unfinished
 router.patch('/activationPage/:page/:activation',activationPage(),validation, pageController.activationPage);   // Unfinished
 router.delete('/removePageImage/:page', removePageImage(), validation, pageController.removePageImage);
+
+// Requests routes
+router.get('/requests/show',requestsController.showRequests);
+router.post('/requests/accept',requestsController.acceptRequest);
+router.post('/requests/reject',requestsController.rejectRequest);
 
 // Post Routes
 router.post('/addPost/:page', uploadPost.array('postimage'), addPost(), postController.addPost);

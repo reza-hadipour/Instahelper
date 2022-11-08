@@ -44,6 +44,7 @@ router.put('/:page/:post/like',authenticateApi.handle, postController.likeSingle
 
 // Follow/Unfollow Single Page
 router.post('/:username/follow',authenticateApi.handle, pageController.followPage);
+// before accept this request, it must be stored in another table then admin accept it to add in page's follower list
 
 // Comment
 router.post('/addComment/:post',authenticateApi.handle ,addComment() ,validation ,postController.addComment);

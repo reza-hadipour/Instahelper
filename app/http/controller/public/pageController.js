@@ -9,6 +9,7 @@ const Controller = require('../controller');
 const pageModel = require('../../../models/pageModel');
 const createHttpError = require('http-errors');
 const postModel = require('../../../models/postModel');
+const requestsModel = require('../../../models/requestsModel');
 
 class pageController extends Controller{
     
@@ -145,14 +146,36 @@ class pageController extends Controller{
         if(page){
             let followerIdx = page.followers.indexOf(userId);
             if(followerIdx == -1){
-                // Follow the page
-                page.followers.push(userId);
-                await page.inc();
-                // await page.save();
-                return res.json({
-                    ...this.successPrams(),
-                    message : `You follow ${page.title} Succesfully`
-                });
+                if(page.status == 'public'){
+                    page.followers.push(userId);
+                    await page.inc();
+                    return res.json({
+                        ...this.successPrams(),
+                        message : `Your are following ${page.title} succesfully`
+                    });
+                }else{
+                    // Send request to Follow the page
+                    let reqHistory = await requestsModel.findOne({'requester' : userId});
+                    if(!reqHistory){
+                        // create new request
+                        const newReq = new requestsModel({
+                            page : page._id,
+                            requester : userId
+                        });
+                        await newReq.save();
+                        return res.json({
+                            ...this.successPrams(),
+                            message : `Your following request sent to ${page.title} succesfully`
+                        });
+                    }else{
+                        // Remove the old request
+                        await reqHistory.remove();
+                        return res.json({
+                            ...this.successPrams(),
+                            message : `Your following request removed from ${page.title} list succesfully`
+                        });
+                    }
+                }
             }else{
                 // Unfollow the page
                 page.followers.splice(followerIdx,1);

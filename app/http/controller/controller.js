@@ -31,13 +31,13 @@ class Controller {
     errorResponse(error,res){
         let err = {
             status : 'failed',
-            statusCode: error.statusCode,
+            statusCode: error?.statusCode || 555,
             Error: {
-                message: error.message
+                message: error?.message
             }
         }
 
-        res.status(error.statusCode).json(err);
+        res.status(error?.statusCode || 555).json(err);
     }
 
     successPrams(){
