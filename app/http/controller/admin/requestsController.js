@@ -108,6 +108,15 @@ class requestsController extends Controller{
                         updatePage.followers.push(...pageNewFollowers[key].list); //pageFollowers;
                         await updatePage.inc(pagesChanged[key]);
 
+                        // Add new followers into redis InstaHelper:Followers:username
+                        let followers = [];
+                        updatePage.followers.forEach(user => {
+                            followers.push(String(user));
+                        });
+
+                        await global.myRedisClient.sAdd(`InstaHelper:Followers:${updatePage.username}`, followers);
+                        // global.myRedisClient.sAdd(`InstaHelper:Followers:${updatePage.username}`,pageNewFollowers[key].list);
+                        
                         resultData.push({
                             username : pageNewFollowers[key].username,
                             followers : pageNewFollowers[key].list,

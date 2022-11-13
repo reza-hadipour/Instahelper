@@ -46,7 +46,7 @@ router.delete('/removePostLink/:post', removePostLink(), validation, postControl
 router.delete('/removePostLinks/:post', removeAllPostLink(), validation, postController.removeAllPostLink);
 
 // Comment Routes
-router.get('/showComments/',showUnapprovedComments(), validation,commentController.showComments)
+router.get('/showComments/',showUnapprovedComments(), validation, commentController.showComments)
 // router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
 router.patch('/approveComments',approveComment(), validation, commentController.approveComments)
 // router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)

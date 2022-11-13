@@ -9,6 +9,7 @@ const postController = require('../../../http/controller/public/postController')
 // Midllewares
 const { validation } = require('../../../http/middleware/adminValidation/validation');
 const authenticateApi = require('../../../http/middleware/authenticateApi');
+const { checkingSubscriptions } = require('../../../http/middleware/checkSubscription');
 
 // Validators
 const {addSubComment , addComment} = require('../../../http/validator/private/pages');
@@ -29,7 +30,7 @@ const {addSubComment , addComment} = require('../../../http/validator/private/pa
 router.get('/',authenticateApi.handle , pageController.exploreSubscribedPages);
 
 // Show Single Page Information and its posts
-router.get('/:username',authenticateApi.handleNoResponse, pageController.showSinglePage);
+router.get('/:username',authenticateApi.handleNoResponse, checkingSubscriptions, pageController.showSinglePage);
 
 // Show single Post
 // [:page > username , :post > slug]

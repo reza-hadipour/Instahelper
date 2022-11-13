@@ -180,6 +180,10 @@ class pageController extends Controller{
                 // Unfollow the page
                 page.followers.splice(followerIdx,1);
                 await page.inc(-1);
+                
+                // Remove username from Redis in InstaHelper:Follower:username
+                global.myRedisClient.sRem(`InstaHelper:Followers:${page.username}`,userId);
+
                 return res.json({
                     ...this.successPrams(),
                     message : `You Unfollow ${page.title} Succesfully`

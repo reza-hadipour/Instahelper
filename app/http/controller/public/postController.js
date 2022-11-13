@@ -369,10 +369,11 @@ class postController extends Controller {
     async #checkPageSubscribtion(page,userId){
         return new Promise((resolve,reject)=>{
             if(page.status == 'private'){
-                if (!page?.followers.includes(userId)){
-                    reject(createHttpError.Unauthorized('محتویات این صحفه خصوصی است.'));
-                }else{
+                // if (!page?.followers.includes(userId)){
+                if (req?.user?.isFollower){
                     resolve(true);
+                }else{
+                    reject(createHttpError.Unauthorized('محتویات این صحفه خصوصی است.'));
                 }
             }else{
                 resolve(true);
