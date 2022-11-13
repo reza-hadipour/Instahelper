@@ -55,9 +55,9 @@ class CommentController extends Controller {
             }
 
             // console.log(multiCommentIds);
-            if(!multiCommentIds.every(isMongoID)) {
-                return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
-            }
+            // if(!multiCommentIds.every(isMongoID)) {
+            //     return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
+            // }
         }else{
             // All comment of user
 
@@ -208,9 +208,9 @@ class CommentController extends Controller {
             }
 
             // console.log(multiCommentIds);
-            if(!multiCommentIds.every(isMongoID)) {
-                return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
-            }
+            // if(!multiCommentIds.every(isMongoID)) {
+            //     return this.errorResponse(createHttpError.BadRequest('شناسه نظرهای ارسالی صحیح نمی باشد.'),res);
+            // }
         }else{
             // Remove All Comments
             // Dont let approve all comments

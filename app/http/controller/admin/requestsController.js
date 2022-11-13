@@ -37,9 +37,9 @@ class requestsController extends Controller{
             }
 
             // console.log(multireqIds);
-            if(!multireqIds.every(isMongoId)) {
-                return this.errorResponse(createHttpError.BadRequest('شناسه درخواست های ارسالی صحیح نمی باشد.'),res);
-            }
+            // if(!multireqIds.every(isMongoId)) {
+            //     return this.errorResponse(createHttpError.BadRequest('شناسه درخواست های ارسالی صحیح نمی باشد.'),res);
+            // }
         }else{
             // All requests of user
 
@@ -159,9 +159,9 @@ class requestsController extends Controller{
             }
 
             // console.log(multireqIds);
-            if(!multireqIds.every(isMongoId)) {
-                return this.errorResponse(createHttpError.BadRequest('شناسه درخواست های ارسالی صحیح نمی باشد.'),res);
-            }
+            // if(!multireqIds.every(isMongoId)) {
+            //     return this.errorResponse(createHttpError.BadRequest('شناسه درخواست های ارسالی صحیح نمی باشد.'),res);
+            // }
         }else{
             // All requests of user
 

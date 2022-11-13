@@ -15,7 +15,7 @@ const { validation } = require('../../../http/middleware/adminValidation/validat
 const {addPage, editPage, removePage, showPosts, removePageImage, activationPage} = require('../../../http/validator/pageValidation');
 const {addPost, editPost, removePost, addPostImage, removePostImage, removePostLink, removeAllPostLink} = require('../../../http/validator/postValidation');
 const {showUnapprovedComments, approveComment , removeComments} = require('../../../http/validator/commentValidation');
-
+const {showRequests, acceptOrRejectRequests} = require('../../../http/validator/private/requests');
 
 router.get('/', (req, res, next) => {
     res.json('Private Routes');
@@ -30,9 +30,9 @@ router.patch('/activationPage/:page/:activation',activationPage(),validation, pa
 router.delete('/removePageImage/:page', removePageImage(), validation, pageController.removePageImage);
 
 // Requests routes
-router.get('/requests/show',requestsController.showRequests);
-router.post('/requests/accept',requestsController.acceptRequest);
-router.post('/requests/reject',requestsController.rejectRequest);
+router.get('/requests/show', showRequests(), validation, requestsController.showRequests);
+router.post('/requests/accept', acceptOrRejectRequests(), validation, requestsController.acceptRequest);
+router.post('/requests/reject', acceptOrRejectRequests(), validation, requestsController.rejectRequest);
 
 // Post Routes
 router.post('/addPost/:page', uploadPost.array('postimage'), addPost(), postController.addPost);

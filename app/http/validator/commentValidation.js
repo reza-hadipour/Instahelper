@@ -45,6 +45,22 @@ class commentValidation extends Validator {
                     }
                 }
                 return true;
+            }),
+            body('comments').custom(commentIds => {
+                if(commentIds){
+                    let multiCommentIds = [];
+                    if (typeof commentIds == 'string'){
+                        multiCommentIds.push(...commentIds.split(','))   // for multiple ids
+                    }else{
+                        multiCommentIds = commentIds;   // for single id
+                    }
+
+                    if(!multiCommentIds.every(Validator.isMongoId)) {
+                        throw new Error('شناسه نظرهای ارسالی صحیح نمی باشد.');
+                    }
+                }else{
+                    return true
+                }
             })
             ]
     }
@@ -94,6 +110,22 @@ class commentValidation extends Validator {
                     }
                 }
                 return true;
+            }),
+            body('comments').custom(commentIds => {
+                if(commentIds){
+                    let multiCommentIds = [];
+                    if (typeof commentIds == 'string'){
+                        multiCommentIds.push(...commentIds.split(','))   // for multiple ids
+                    }else{
+                        multiCommentIds = commentIds;   // for single id
+                    }
+
+                    if(!multiCommentIds.every(Validator.isMongoId)) {
+                        throw new Error('شناسه نظرهای ارسالی صحیح نمی باشد.');
+                    }
+                }else{
+                    return true
+                }
             })
             ]
     }
