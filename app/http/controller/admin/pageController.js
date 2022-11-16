@@ -105,7 +105,12 @@ class pageController extends Controller {
         let body = helpers.normalizeData(req.body);
         let newPage = new pageModel(body);
 
-        newPage.save().then(() => {
+        newPage.save().then(async () => {
+            // insert into Redis InstaHelper:PrivatePages
+            if(newPage?.status == 'private'){
+                await global.myRedisClient.sAdd(`InstaHelper:PrivatePages`, String(newPage?.username));
+            }
+
             return res.json({
                 ...this.successPrams(),
                 message: "صفحه جدید با موفقیت ساخته شد.",
@@ -156,6 +161,14 @@ class pageController extends Controller {
             if (req ?. file && page.thumb !== CONSTS.PAGE_DEFAULT_THUBM) {
                 this.#removeImages(page.images);
             }
+
+            // insert into Redis InstaHelper:PrivatePages
+            if(body?.status == 'private' && page?.status == 'public'){
+                await global.myRedisClient.sAdd(`InstaHelper:PrivatePages`, String(page?.username));
+            }else if(body?.status == 'public' && page?.status == 'private'){
+                await global.myRedisClient.sRem(`InstaHelper:PrivatePages`, String(page?.username));
+            }
+
         } else {
             return this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش صفحه.'), res)
         }
@@ -188,7 +201,12 @@ class pageController extends Controller {
 
             // Remove the page
             page.remove()
-            .then( () => {
+            .then(async () => {
+                // remove from Redis InstaHelper:PrivatePages
+                if(page?.status == 'private'){
+                    await global.myRedisClient.sRem(`InstaHelper:PrivatePages`, String(page?.username));
+                }
+
                 return res.json({
                     ...this.successPrams(),
                     message: 'صفحه با موفقیت حذف شد.',
@@ -223,7 +241,14 @@ class pageController extends Controller {
 
             // Remove the page
             page.activate(activation)
-            .then( () => {
+            .then(async () => {
+                // insert/remove into/from Redis InstaHelper:PrivatePages
+                if(page?.status == 'private' && activation == 'false'){
+                    await global.myRedisClient.sRem(`InstaHelper:PrivatePages`, String(page?.username));
+                }else if(page?.status == 'private' && activation == 'true'){
+                    await global.myRedisClient.sAdd(`InstaHelper:PrivatePages`, String(page?.username));
+                }
+                
                 return res.json({
                     ...this.successPrams(),
                     message: (activation == 'true') ? 'صفحه با موفقیت فعال شد.' : 'صفحه با موفقیت غیرفعال شد.',

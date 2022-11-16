@@ -37,7 +37,7 @@ class Controller {
             }
         }
 
-        res.status(error?.statusCode || 555).json(err);
+        res.status(err?.statusCode).json(err);
     }
 
     successPrams(){

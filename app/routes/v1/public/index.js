@@ -30,25 +30,27 @@ const {addSubComment , addComment} = require('../../../http/validator/private/pa
 router.get('/',authenticateApi.handle , pageController.exploreSubscribedPages);
 
 // Show Single Page Information and its posts
-router.get('/:username',authenticateApi.handleNoResponse, checkingSubscriptions, pageController.showSinglePage);
+router.get('/:username',authenticateApi.handleNoResponse, pageController.showSinglePage);
 
 // Show single Post
-// [:page > username , :post > slug]
-router.get('/:page/:post',authenticateApi.handleNoResponse, postController.showSinglePost);
+// [:username > page , :slug > post]
+router.get('/:username/:slug',authenticateApi.handleNoResponse, checkingSubscriptions, postController.showSinglePost);
 // Show Comments of single Post. Options: Query -> [page,limit,sublimit]
-router.get('/:page/:post/comments',authenticateApi.handle, postController.showSinglePostComments);
+router.get('/:username/:slug/comments',authenticateApi.handle, checkingSubscriptions, postController.showSinglePostComments);
 // Show Who Like single Post. Options: Query -> [page,limit]
-router.get('/:page/:post/likes',authenticateApi.handle, postController.showSinglePostLikes);
+router.get('/:username/:slug/likes',authenticateApi.handle, checkingSubscriptions, postController.showSinglePostLikes);
 
 // Like and Dislike
-router.put('/:page/:post/like',authenticateApi.handle, postController.likeSinglePost);
+router.put('/:username/:slug/like',authenticateApi.handle, checkingSubscriptions ,postController.likeSinglePost);
 
 // Follow/Unfollow Single Page
 router.post('/:username/follow',authenticateApi.handle, pageController.followPage);
 // before accept this request, it must be stored in another table then admin accept it to add in page's follower list
 
 // Comment
+// :post > postId
 router.post('/addComment/:post',authenticateApi.handle ,addComment() ,validation ,postController.addComment);
+// :comment > commentId
 router.post('/addSubComment/:comment',authenticateApi.handle, addSubComment(),validation ,postController.addSubComment)
 
 // /:username/addComment

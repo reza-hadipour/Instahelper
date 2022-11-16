@@ -16,13 +16,16 @@ const userModel = require('../../../models/userModel');
 // Helper
 const helpers = require('../../../../helpers');
 const e = require('express');
+const { runInThisContext } = require('vm');
+
+const privatePageError = createHttpError.Unauthorized('محتویات این صحفه خصوصی است.');
 
 'use strict';
 class postController extends Controller {
 
     async likeSinglePost(req,res,next){
-        let username = String(req?.params?.page).toLowerCase() || undefined;
-        let slug = req?.params?.post || undefined;
+        let username = String(req?.params?.username).toLowerCase() || undefined;
+        let slug = req?.params?.slug || undefined;
         let userId = req?.user?.id;
 
         let page = await pageModel.findOne({username, 'active': true}).populate({
@@ -33,7 +36,7 @@ class postController extends Controller {
             perDocumentLimit : 1,
         }).exec();
 
-        this.#checkPageSubscribtion(page,userId)
+        this.#checkPageSubscription(page,userId,req)
             .then ( async ()=> {
                 if(page?.posts?.length > 0){
                     let post = page.posts[0];
@@ -69,8 +72,8 @@ class postController extends Controller {
     }
 
     async showSinglePostLikes(req,res,next){
-        let username = String(req?.params?.page).toLowerCase() || undefined;
-        let slug = req?.params?.post || undefined;
+        let username = String(req?.params?.username).toLowerCase() || undefined;
+        let slug = req?.params?.slug || undefined;
         let userId = req?.user?.id;
 
         let pageNum = req?.query?.page || 1;
@@ -84,7 +87,7 @@ class postController extends Controller {
             perDocumentLimit : 1,
         }).exec();
 
-        this.#checkPageSubscribtion(page,userId)
+        this.#checkPageSubscription(page,userId,req)
         .then( async () => {
             if(page?.posts?.length > 0){
                 // Get users
@@ -130,8 +133,8 @@ class postController extends Controller {
     }
 
     async showSinglePostComments(req,res,next){
-        let username = String(req?.params?.page).toLowerCase() || undefined;
-        let slug = req?.params?.post || undefined;
+        let username = String(req?.params?.username).toLowerCase() || undefined;
+        let slug = req?.params?.slug || undefined;
         let userId = req?.user?.id;
 
         let pageNum = req?.query?.page || 1;
@@ -146,7 +149,7 @@ class postController extends Controller {
             perDocumentLimit : 1,
         }).exec();
 
-        this.#checkPageSubscribtion(page,userId)
+        this.#checkPageSubscription(page,userId,req)
             .then ( async ()=> {
                 if(page?.posts?.length > 0){
                     // Get Comments
@@ -215,10 +218,15 @@ class postController extends Controller {
     }
 
     async showSinglePost(req,res,next){
-        let username = String(req?.params?.page).toLowerCase() || undefined;
-        let slug = req?.params?.post || undefined;
-        let userId = req?.user?.id || undefined;
+        let username = String(req?.params?.username).toLowerCase() || undefined;
+        let slug = req?.params?.slug || undefined;
+        let userId = req?.user?.id ;
 
+        // Check if user doesn`t subscribe a private then and prevent to check the pageModel;
+        // await this.#checkPageSubscriptionInRedis(req,res)
+        
+        if((req?.page?.isPrivatePage && !req?.user?.isFollower)) return this.errorResponse(privatePageError,res);
+        
         let page = await pageModel.findOne({username, 'active': true}).populate({
             path : 'posts',
             match : {slug , 'active': true},
@@ -263,25 +271,39 @@ class postController extends Controller {
             ]
         }).exec();
 
-        this.#checkPageSubscribtion(page,userId)
-        .then( async () => {
-            if(page?.posts?.length > 0){
-                let data = {
-                    pageUsername : page.username,
-                    pageTitle : page.title,
-                    pageStatus : page.status,
-                    post : page.posts[0]
-                }
-    
-                // Inc postView
-                await page.posts[0].inc('view');
-                return res.json(data);
-    
-            }else{
-                next();
+        // this.#checkPageSubscription(page,userId,req)
+        // .then( async () => {
+        //     if(page?.posts?.length > 0){
+        //         let data = {
+        //             pageUsername : page.username,
+        //             pageTitle : page.title,
+        //             pageStatus : page.status,
+        //             post : page.posts[0]
+        //         }
+        //         // Inc postView
+        //         await page.posts[0].inc('view');
+        //         return res.json(data);
+        //     }else{
+        //         next();
+        //     }
+        // })
+        // .catch( err => this.errorResponse(err,res));
+
+        if(page?.posts?.length > 0){
+            let data = {
+                pageUsername : page.username,
+                pageTitle : page.title,
+                pageStatus : page.status,
+                post : page.posts[0]
             }
-        })
-        .catch( err => this.errorResponse(err,res));
+            // Inc postView
+            await page.posts[0].inc('view');
+            return res.json({
+                ...this.successPrams(),
+                ...data});
+        }else{
+            next();
+        }
         
     }
 
@@ -298,7 +320,7 @@ class postController extends Controller {
 
         if(post?.page){
             let page = post.page;
-            this.#checkPageSubscribtion(page,userId)
+            this.#checkPageSubscription(page,userId)
             .then(async ()=>{
                 // return res.json(post);
                 let comment = new commentModel({
@@ -339,7 +361,7 @@ class postController extends Controller {
 
         if(post?.page){
             let page = post.page;
-            this.#checkPageSubscribtion(page,userId)
+            this.#checkPageSubscription(page,userId)
             .then(async ()=>{
                 // return res.json(post);
                 let comment = new commentModel({
@@ -366,11 +388,12 @@ class postController extends Controller {
         }
     }
     
-    async #checkPageSubscribtion(page,userId){
-        return new Promise((resolve,reject)=>{
-            if(page.status == 'private'){
-                // if (!page?.followers.includes(userId)){
-                if (req?.user?.isFollower){
+    async #checkPageSubscription(page,userId,req = undefined){
+        return new Promise(async (resolve,reject)=>{
+            if(page?.status == 'private'){
+                if(page?.followers.includes(userId)){
+                    //insert into Redis InstaHelper:Followers:Username
+                    await global.myRedisClient.sAdd(`InstaHelper:Followers:${page.username}`,userId);
                     resolve(true);
                 }else{
                     reject(createHttpError.Unauthorized('محتویات این صحفه خصوصی است.'));
@@ -380,6 +403,12 @@ class postController extends Controller {
             }
         })
         
+    }
+
+    #checkPageSubscriptionInRedis(req,res){
+            if((req?.page?.isPrivatePage && !req?.user?.isFollower)){
+                return this.errorResponse(createHttpError.Unauthorized('محتویات این صحفه خصوصی است.'),res);
+            }
     }
 }
 
