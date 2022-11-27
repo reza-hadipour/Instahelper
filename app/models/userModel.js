@@ -16,9 +16,9 @@ const userSchema = Schema({
     }},
     roles: [{type: String, default:'USER'}],
     refreshToken: {type: String, default: null},
-    pages : [{type: mongoose.Types.ObjectId, ref: "page"}],
+    // pages : [{type: mongoose.Types.ObjectId, ref: "Page"}],
     verifyed : {type: Boolean, default: false},
-    followings : [{type: mongoose.Types.ObjectId, ref : "page"}]
+    // followings : [{type: mongoose.Types.ObjectId, ref : "Page"}]
 },{timestamps: true, toJSON:{virtuals: true}});
 
 // userSchema.pre('save',function(next){
@@ -28,6 +28,18 @@ const userSchema = Schema({
 //         next();
 //     })
 // })
+
+userSchema.virtual('pages',{
+    ref: 'Page',
+    localField : '_id',
+    foreignField : 'owner'
+});
+
+userSchema.virtual('followings',{
+    ref: 'Page',
+    localField : '_id',
+    foreignField : 'followers'
+});
 
 userSchema.methods.hashPassword = function(password){
     const salt = bcrypt.genSaltSync(3);

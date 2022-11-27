@@ -12,6 +12,49 @@ class userValidation extends Validator{
                     .withMessage('توکن بازیابی یافت نشد.')
         ]
     }
+
+    checkEditProfile(){
+        return[
+            body('name').custom(value=>{
+                if(value != undefined){
+                    if(value.length > 0){
+                        return true
+                    }else{
+                        throw new Error('مقدار نام نمی تواند خالی باشد.');
+                    }
+                }else{
+                    return true;
+                }
+            }),
+            body('family').custom(value=>{
+                if(value != undefined){
+                    if(value.length > 0){
+                        return true
+                    }else{
+                        throw new Error('مقدار نام خانوادگی نمی تواند خالی باشد.');
+                    }
+                }else{
+                    return true;
+                }
+            }),
+            body('mobile')
+            .custom(async (value,{req})=>{
+
+                if(value != undefined){
+                    
+                    if(! new RegExp('^(\\+{1})(\\d{12})$').test(value)){
+                        throw new Error('فرمت ارسالی شماره موبایل صحیح نیست. مثال: +989123456789');
+                    }
+
+                    let user = await userModel.findOne({$and:[{'_id' : {$ne : req.user.id}},{"mobile":value}]});
+                    if(user) throw new Error('موبایل وارد شده تکراری است');
+                }else{
+                    return true;
+                }
+
+            })
+        ]
+    }
     
     checkRegister(){
         return[

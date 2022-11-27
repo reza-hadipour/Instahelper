@@ -24,7 +24,7 @@ const {addSubComment , addComment} = require('../../../http/validator/private/pa
 
 // Show All Page
 
-// Show Latest Post of any Page
+// Show Latest Post of any Page /Eplorer
 
 // Show ONLY Following Pages
 router.get('/',authenticateApi.handle , pageController.exploreSubscribedPages);

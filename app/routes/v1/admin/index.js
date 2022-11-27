@@ -6,6 +6,7 @@ const pageController = require('../../../http/controller/admin/pageController');
 const postController = require('../../../http/controller/admin/postController');
 const commentController = require('../../../http/controller/admin/commentController');
 const requestsController = require('../../../http/controller/admin/requestsController');
+const userController = require('../../../http/controller/admin/userController');
 
 // Midllewares
 const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage');
@@ -16,10 +17,17 @@ const {addPage, editPage, removePage, showPosts, removePageImage, activationPage
 const {addPost, editPost, removePost, addPostImage, removePostImage, removePostLink, removeAllPostLink} = require('../../../http/validator/postValidation');
 const {showUnapprovedComments, approveComment , removeComments} = require('../../../http/validator/commentValidation');
 const {showRequests, acceptOrRejectRequests} = require('../../../http/validator/private/requests');
+const {checkEditProfile} = require('../../../http/validator/userValidation');
 
 router.get('/', (req, res, next) => {
     res.json('Private Routes');
 });
+
+// Profile routes
+router.get('/profile',userController.showProfile);
+
+// Edit Profile
+router.put('/editProfile', checkEditProfile(), validation, userController.editProfile);
 
 // Page routes
 router.get('/showPosts/:page',showPosts(), validation, pageController.showPosts);
