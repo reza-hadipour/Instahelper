@@ -110,7 +110,7 @@ class Application{
                     url: `http:${configs.host}:${port}`
                 }]
             },
-            apis : [path.join(__dirname,'..','swagger','*.yaml')]
+            apis : [path.join(__dirname,'..','swagger','**/*.yaml')]
         });
         app.use('/api-doc',swaggerUi.serve,swaggerUi.setup(swaggerOptions,{explorer:true}));
     }

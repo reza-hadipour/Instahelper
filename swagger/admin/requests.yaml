@@ -1,0 +1,220 @@
+paths:
+
+  /admin/requests/show:
+      get:
+        tags: ['Admin API - Requests']
+        summary: "Show All user`s following requests"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          404:
+            $ref: "#/components/responses/404Response"
+          200:
+            description: "Show all following requests of user's page"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    totalRequests:
+                      type: integer
+                      example: "1"
+                    requests:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          page:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: 637218bf867db03533bb7711
+                              username:
+                                type: string
+                                example: "therahanik"
+                              title:
+                                type: string
+                                example: "رهانیک"
+                          requester:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "633c495129f15986cd60ba83"
+                              name:
+                                type: string
+                                example: "Sadegh"
+                              family:
+                                type: string
+                                example: "Nikpour"
+                              fullname:
+                                type: string
+                                example: "Sadegh Nikpour"
+                          createdAt:
+                            type: string
+                            example: "2022-11-28T09:34:38.339Z"
+                          updatedAt:
+                            type: string
+                            example: "2022-11-28T09:34:38.339Z"
+                              
+  /admin/requests/accept:
+      post:
+        tags: ['Admin API - Requests']
+        summary: "Accept user`s following requests"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      type: string
+                    example: ["638480aea2d3a0b2422a70fa"]
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          404:
+            $ref: "#/components/responses/404Response"
+          200:
+            description: "Accept following requests of user's page successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: "1 درخواست تایید شد."
+                    result:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          username:
+                            type: string
+                            example: 637218bf867db03533bb7711
+                          followers:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "633c495129f15986cd60ba83"
+                                name:
+                                  type: string
+                                  example: "Sadegh"
+                                family:
+                                  type: string
+                                  example: "Nikpour"
+                                fullname:
+                                  type: string
+                                  example: "Sadegh Nikpour"
+                          total:
+                            type: string
+                            example: "رهانیک"
+                          
+  /admin/requests/reject:
+      post:
+        tags: ['Admin API - Requests']
+        summary: "Reject user`s following requests"
+        security:
+          - BearerAuth: []
+        parameters: 
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: string
+            example: "635e3362ff7c2221e20c960d"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      type: string
+                    example: ["638480aea2d3a0b2422a70fa"]
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          406:
+            $ref: "#/components/responses/406NotAcceptablePostAuthorization"
+          404:
+            description: "No request found"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    statusCode:
+                      type: integer
+                      example: "404"
+                    Error:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          example: "درخواستی یافت نشد."
+          200:
+            description: "Reject following requests of user's page successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: "1 درخواست حذف شد."
+                          
+                              
+                    

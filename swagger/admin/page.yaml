@@ -28,6 +28,8 @@ paths:
         responses:
           401:
             $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404Response"
           400:
             description: "Bad request errors"
             content:

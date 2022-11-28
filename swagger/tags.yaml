@@ -7,6 +7,8 @@ tags:
     description: "Page Administration"
   - name: "Admin API - Post"
     description: "Post Administration"
+  - name: "Admin API - Requests"
+    description: "Following requests"
   - name: "Authentication"
     description: "Register,Login,RefreshToken"
   - name: "Reset Password"
