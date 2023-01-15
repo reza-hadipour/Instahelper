@@ -14,7 +14,7 @@ const userSchema = Schema({
         code: 0,
         expiresIn : 0
     }},
-    roles: [{type: String, default:'USER'}],
+    roles: [{type: String, default:['USER']}],
     refreshToken: {type: String, default: null},
     // pages : [{type: mongoose.Types.ObjectId, ref: "Page"}],
     verifyed : {type: Boolean, default: false},

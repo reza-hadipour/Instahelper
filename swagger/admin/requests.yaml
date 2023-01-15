@@ -215,6 +215,3 @@ paths:
                     message:
                       type: string
                       example: "1 درخواست حذف شد."
-                          
-                              
-                    

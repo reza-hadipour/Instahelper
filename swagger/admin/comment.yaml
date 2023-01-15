@@ -309,4 +309,3 @@ paths:
                         example: "شناسه نظرهای ارسالی صحیح نمی باشد."
         406:
           $ref: "#/components/responses/406NotAcceptablePostAuthorization"
-  

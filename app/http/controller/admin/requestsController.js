@@ -5,7 +5,6 @@ const Controller = require('../controller');
 // Models
 const requestsModel = require('../../../models/requestsModel');
 const pageModel = require('../../../models/pageModel');
-const { RedisSearchLanguages } = require('@redis/search/dist/commands');
 
 class requestsController extends Controller{
     async acceptRequest(req,res,next){
