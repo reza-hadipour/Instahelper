@@ -1,8 +1,8 @@
 const controller = require('../controller');
+const createHttpError = require('http-errors');
 
 // Models
 const permissionModel = require('../../../models/permissionModel');
-const createHttpError = require('http-errors');
 
 class permissionController extends controller {
 
@@ -60,11 +60,7 @@ class permissionController extends controller {
         let deleteResult = await permissionModel.findByIdAndRemove(permissionId,{new : true})
         .catch(err => {
             debugDB(err);
-            if(err?.code === 11000){
-                this.errorResponse(createHttpError.BadRequest('نام مجوز تکراری است.'),res);
-            }else{
-                this.errorResponse(createHttpError.InternalServerError('خطا در ویرایش مجوز'),res);
-            }
+            this.errorResponse(createHttpError.InternalServerError('خطا در حذف مجوز'),res);
         });
 
         // console.log(deleteResult);
