@@ -24,6 +24,6 @@ router.get('/roles', showAllRoles);
 router.get('/roles/:id', showRoleDetails);
 router.post('/createRole', addRole(), validation, createRole);
 router.put('/editRole/:id', editRoleValidator(), validation, editRole);
-router.delete('/removeRole',removeRoleValidator(), validation, removeRole);
+router.delete('/removeRole/:id',removeRoleValidator(), validation, removeRole);
 
 module.exports = router;
