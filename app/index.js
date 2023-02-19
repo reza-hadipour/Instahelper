@@ -12,7 +12,6 @@ const expressSession = require('express-session');
 const redis = require('redis');
 const cors = require('cors');
 
-
 // // Set RedicClient in global
 // myRedisClient = {};
 
@@ -25,6 +24,10 @@ debugRedis= require('debug')('instaHelper:Redis');
 CONSTS = require('../helpers/consts')
 
 const {normalizePort} = require('../helpers');
+
+// Set ACL
+const gate = require('../helpers/gate');
+
 
 const port = normalizePort(configs.port || '3000');
 app.set('port',port);
@@ -87,6 +90,7 @@ class Application{
         app.use(passport.initialize());
         app.use(passport.session());
         app.use(cors());
+        app.use(gate.middleware());
 
     }
 

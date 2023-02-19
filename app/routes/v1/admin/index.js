@@ -11,6 +11,7 @@ const userController = require('../../../http/controller/admin/userController');
 // Midllewares
 const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage');
 const { validation } = require('../../../http/middleware/adminValidation/validation');
+const gate = require('../../../../helpers/gate');
 
 // Validation
 const {addPage, editPage, removePage, showPosts, removePageImage, activationPage} = require('../../../http/validator/pageValidation');
@@ -19,7 +20,7 @@ const {showUnapprovedComments, approveComment , removeComments} = require('../..
 const {showRequests, acceptOrRejectRequests} = require('../../../http/validator/private/requests');
 const {checkEditProfile} = require('../../../http/validator/userValidation');
 
-router.get('/', (req, res, next) => {
+router.get('/', gate.can('show-admin-routes') ,(req, res, next) => {
     res.json('Private Routes');
 });
 

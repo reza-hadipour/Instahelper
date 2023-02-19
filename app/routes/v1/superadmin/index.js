@@ -26,4 +26,7 @@ router.post('/createRole', addRole(), validation, createRole);
 router.put('/editRole/:id', editRoleValidator(), validation, editRole);
 router.delete('/removeRole/:id',removeRoleValidator(), validation, removeRole);
 
+router.put('/allocateUserRole/:id',(req,res)=>{});
+router.put('/removeUserRole/:id',(req,res)=>{});
+
 module.exports = router;
