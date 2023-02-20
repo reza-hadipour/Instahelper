@@ -22,7 +22,11 @@ class permissionController extends controller {
         .then( result =>{
             res.json({
                 ...this.successPrams(),
-                'Permission' : result
+                'new permission' : {
+                    id : result._id,
+                    name : result.name,
+                    label : result.label
+                }
             });
         })
         .catch(err => {
@@ -42,7 +46,11 @@ class permissionController extends controller {
         .then( result =>{
             res.json({
                 ...this.successPrams(),
-                'Permission': result
+                'permission': {
+                    id : result._id,
+                    name : result.name,
+                    label : result.label
+                }
             });
         })
         .catch(err => {
@@ -67,7 +75,11 @@ class permissionController extends controller {
         if (deleteResult){
             res.json({
                 ...this.successPrams(),
-                deleteResult});
+                'deleted permission' : {
+                    'id' : deleteResult._id,
+                    'name' : deleteResult.name,
+                    'label' : deleteResult.label
+                }});
         }else{
             this.errorResponse(createHttpError.NotFound('مجوزی با این شناسه یافت نشد.'),res);
         }

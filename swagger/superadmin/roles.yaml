@@ -1,0 +1,295 @@
+paths:
+
+  /su/roles:
+      get:
+        tags: ['Super Admin API - Roles']
+        summary: "Show All Roles"
+        security:
+          - BearerAuth: []
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          200:
+            description: "Show all roles"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    roles:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "63c3cb48d804e79f46db45c7"
+                          name:
+                            type: string
+                            example: "ADMIN"
+                          label:
+                            type: string
+                            example: "مدیر کل"
+                          permissions:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: 63c3ce107f7c3aaaeedda5d2
+                                name:
+                                  type: string
+                                  example: "create-post"
+                                label:
+                                  type: string
+                                  example: "Create post"
+  /su/roles/{id}:
+      get:
+        tags: ['Super Admin API - Roles']
+        summary: "Show single role details"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: '63da2af8225ddc392cbda81c'
+
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404Response"
+          200:
+            description: "Show single role details"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    roles:
+                      type: array
+                      items:
+                        type:
+                    permissions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "63c3cb48d804e79f46db45c7"
+                          name:
+                            type: string
+                            example: "ADMIN"
+                          label:
+                            type: string
+                            example: "مدیر کل"
+                          permissions:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: 63c3ce107f7c3aaaeedda5d2
+                                name:
+                                  type: string
+                                  example: "create-post"
+                                label:
+                                  type: string
+                                  example: "Create post"
+  /su/createRole:
+      post:
+        tags: ['Super Admin API - Roles']
+        summary: "Create New Role"
+        security:
+          - BearerAuth: []
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                required:
+                  - name
+                  - label
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Reviewer"
+                  label:
+                    type: string
+                    example: "ناظر"
+                  permissions:
+                    type: string
+                    example: '63c3ce107f7c3aaaeedda5d2,63c3ce107f7c3aaaeedda5d1'
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400BadRequestDouplicatRoleName"
+          200:
+            description: "Creating new role successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    new role:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f1dc73531bec2b354c9dfc"
+                        name:
+                          type: string
+                          example: "Reviewer"
+                        label:
+                          type: string
+                          example: "ناظر"
+                        permissions :
+                          type: array
+                          items:
+                            id:
+                              type: string
+                              example: '63c3ce107f7c3aaaeedda5d2'
+                             
+  /su/editRole/{id}:
+      put:
+        tags: ['Super Admin API - Roles']
+        summary: "Edit a Role"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: "63f38ea9cb76a134907ce504"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Reviewer 3"
+                  label:
+                    type: string
+                    example: "ناظر 3"
+                  permissions:
+                    type: string
+                    example: '63c3ce107f7c3aaaeedda5d2'
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400BadRequestDouplicatRoleName"
+          200:
+            description: "Editing a role successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    new role:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f1dc73531bec2b354c9dfc"
+                        name:
+                          type: string
+                          example: "Reviewer"
+                        label:
+                          type: string
+                          example: "ناظر"
+                        permissions :
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: '63c3ce107f7c3aaaeedda5d2'
+                              name:
+                                type: string
+                                example: 'create-post'
+                              label:
+                                type: string
+                                example: 'افزودن پست'
+  /su/removeRole/{id}:
+      delete:
+        tags: ['Super Admin API - Roles']
+        summary: "Remove a Role"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: "63f38ea9cb76a134907ce504"
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404RoleNotFound"
+          200:
+            description: "Removing a role successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    deleted permission:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f38ea9cb76a134907ce504"
+                        name:
+                          type: string
+                          example: "Reviewer"
+                        label:
+                          type: string
+                          example: "ناظر"

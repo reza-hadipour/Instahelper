@@ -363,3 +363,79 @@ components:
                   message:
                     type: string
                     example: "این پست متعلق به شما نیست."
+    400BadRequestDouplicatPermissionName:
+      description: "Bad request errors"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "نام مجوز تکراری است."
+    404PermissionNotFound:
+        description: "Permission not found"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: 'failed'
+                statusCode:
+                  type: string
+                  example: 404
+                Error:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "مجوزی با این شناسه یافت نشد."
+    400BadRequestDouplicatRoleName:
+      description: "Bad request errors"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "نام نقش تکراری است."
+    404RoleNotFound:
+        description: "Role not found"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: 'failed'
+                statusCode:
+                  type: string
+                  example: 404
+                Error:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "نقشی با این شناسه یافت نشد."

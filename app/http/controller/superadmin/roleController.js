@@ -7,20 +7,20 @@ const roleModel = require('../../../models/roleModel');
 class rollController extends controller {
 
     async showAllRoles(req,res,next){
-        let roles = await roleModel.find().populate('permissions','name label').exec();
+        let roles = await roleModel.find({},'name label').populate('permissions','name label').exec();
         res.json({
             ...this.successPrams(),
-            'Rolls' : roles
+            roles
         });
     } 
 
     async showRoleDetails(req,res,next){
         let roleId = req?.params?.id;
-        let role = await roleModel.findById(roleId).populate('permissions', 'name label').exec();
+        let role = await roleModel.findById(roleId,'name label').populate('permissions', 'name label').exec();
         if(role){
             return res.json({
                 ...this.successPrams(),
-                'Role' : role
+                role
             });
         }else{
             return this.errorResponse(createHttpError.NotFound('نقش مورد نظر یافت نشد.'),res);
@@ -43,7 +43,11 @@ class rollController extends controller {
         .then( result =>{
             res.json({
                 ...this.successPrams(),
-                'Role' : result
+                'new role' : {
+                    name: result.name,
+                    label: result.label,
+                    permissions: result.permissions
+                }
             });
         })
         .catch(err => {
@@ -61,7 +65,7 @@ class rollController extends controller {
         let roleId = req?.params?.id;
         // VALIDATION check permissionIds
         roleModel.findByIdAndUpdate(roleId,req.body,{new : true})
-        .populate('permissions')
+        .populate('permissions','name label')
         .exec((err,result)=>{
             if(err){
                 debugDB(err);
@@ -74,7 +78,12 @@ class rollController extends controller {
 
             res.json({
                 ...this.successPrams(),
-                'Role': result
+                'role': {
+                    id: result.id,
+                    name: result.name,
+                    label: result.label,
+                    permissions : result.permissions
+                }
             })
         });
     }
@@ -91,7 +100,11 @@ class rollController extends controller {
         if (deleteResult){
             res.json({
                 ...this.successPrams(),
-                deleteResult
+                'deleted role' : {
+                    id : deleteResult._id,
+                    name : deleteResult.name,
+                    label: deleteResult.label
+                }
             });
         }else{
             this.errorResponse(createHttpError.NotFound('نقشی با این شناسه یافت نشد.'),res);

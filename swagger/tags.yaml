@@ -13,3 +13,7 @@ tags:
     description: "Register,Login,RefreshToken"
   - name: "Reset Password"
     description: "Functions to reset forgoten password"
+  - name: "Super Admin API - Permissions"
+    description: "Permission Functions"
+  - name: "Super Admin API - Roles"
+    description: "Role Functions"

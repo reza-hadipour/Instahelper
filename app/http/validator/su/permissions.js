@@ -24,6 +24,33 @@ class permissions extends Validator{
                 }
                 return true;
             })
+            ,
+            body('name')
+                .custom( name => {
+                    if(name){
+                        if( name?.length == 0) {
+                            throw new Error('نام مجوز را وارد کنید.')
+                        }else{
+                            return true;
+                        }
+                    }else{
+                        return true;
+                    }
+                })
+            ,
+            body('label')
+                .custom( label => {
+                    if(label){
+                        // console.log(label.length);
+                        if(label?.length == 0) {
+                            throw new Error('توضیحات مجوز را وارد کنید.')
+                        }else{
+                            return true
+                        }
+                    }else{
+                        return true;
+                    }
+                })
                 
         ]
     }

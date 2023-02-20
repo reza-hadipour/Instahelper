@@ -1,0 +1,197 @@
+paths:
+
+  /su/permissions:
+      get:
+        tags: ['Super Admin API - Permissions']
+        summary: "Show All Permissions"
+        security:
+          - BearerAuth: []
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404Response"
+          200:
+            description: "Show all permissions"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    permissions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+
+                          id:
+                            type: string
+                            example: 63c3ce107f7c3aaaeedda5d2
+                          name:
+                            type: string
+                            example: "create-post"
+                          label:
+                            type: string
+                            example: "Create post"
+                          createdAt:
+                            type: string
+                            example: "2022-11-28T09:34:38.339Z"
+                          updatedAt:
+                            type: string
+                            example: "2022-11-28T09:34:38.339Z"
+  /su/createPermission:
+      post:
+        tags: ['Super Admin API - Permissions']
+        summary: "Create New Permission"
+        security:
+          - BearerAuth: []
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                required:
+                  - name
+                  - label
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "show-admin-routes"
+                  label:
+                    type: string
+                    example: "مشاهده پنل مدیریت"
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          200:
+            description: "Creating new permission successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    new permission:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f1dc73531bec2b354c9dfc"
+                        name:
+                          type: string
+                          example: "show-admin-routes"
+                        label:
+                          type: string
+                          example: "نمایش پنل مدیریت"
+  /su/editPermission/{id}:
+      put:
+        tags: ['Super Admin API - Permissions']
+        summary: "Edit a Permission"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: "63f3249586d858d04e9f1521"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "show-admin-routes"
+                  label:
+                    type: string
+                    example: "مشاهده پنل مدیریت"
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400BadRequestDouplicatPermissionName"
+          200:
+            description: "Editing a permission successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    new permission:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f1dc73531bec2b354c9dfc"
+                        name:
+                          type: string
+                          example: "show-admin-routes"
+                        label:
+                          type: string
+                          example: "نمایش پنل مدیریت"
+  /su/removePermission/{id}:
+      delete:
+        tags: ['Super Admin API - Permissions']
+        summary: "Remove a Permission"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: "63f3249586d858d04e9f1521"
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404PermissionNotFound"
+          200:
+            description: "Removing a permission successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    deleted permission:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "63f1dc73531bec2b354c9dfc"
+                        name:
+                          type: string
+                          example: "show-admin-routes"
+                        label:
+                          type: string
+                          example: "نمایش پنل مدیریت"
