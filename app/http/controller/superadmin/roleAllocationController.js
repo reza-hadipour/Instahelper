@@ -9,8 +9,6 @@ const createHttpError = require('http-errors');
 class roleAllocationController extends controller{
 
     async allocateRoleToUser(req,res,next){
-
-        // Check in validation that every users Id is mongoId
         let usersBody = req?.body?.users;
         let roleBody = req?.body?.roles;
 
@@ -19,22 +17,17 @@ class roleAllocationController extends controller{
 
         let roleNames = [];
 
-        console.log(typeof usersBody);
-
         if(typeof usersBody == 'string'){
             usersId.push(...usersBody.split(','));
         }else{
             usersId = usersBody;
         }
         
-        console.log('usersId: ' , usersId);
-
         if(typeof roleBody == 'string'){
             rolesId.push(...roleBody.split(','));
         }else{
             rolesId = roleBody;
         }
-        console.log('rolesId: ' , rolesId);
         
         let roles = await roleModel.find({'_id' : {$in: rolesId}})
         if(roles){
@@ -42,17 +35,14 @@ class roleAllocationController extends controller{
                 roleNames.push(role.name.toUpperCase());
             })
         }
-        console.log('roleNames: ', roleNames);
 
         let users = await userModel.find({'_id' : {$in : usersId}});
         let countOfAllocatedRole = users.length;
-        console.log('countOfAllocatedRole: ',countOfAllocatedRole);
 
         usersId.forEach(async (userId) => {
             let user = await userModel.findById(userId);
             if(user){
                 let userRoles = new Set([...user.roles,...roleNames]);
-                console.log('userRoles: ' ,userRoles);
                 user.roles = [...userRoles];
                 await user.save()
             }

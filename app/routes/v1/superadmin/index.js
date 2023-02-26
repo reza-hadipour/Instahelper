@@ -14,6 +14,7 @@ const {allocateRoleToUser, deallocateRole} = require('../../../http/controller/s
 // Validators
 const {addPermission, editPermission : editPermissionValidator, removePermission: removePermissionValidator} = require('../../../http/validator/su/permissions');
 const {addRole, editRole : editRoleValidator, removeRole :  removeRoleValidator} = require('../../../http/validator/su/roles');
+const {allocationRole : allocationRoleValidator} = require('../../../http/validator/su/roleAllocation');
 
 // Routes
 router.get('/permissions',showAllPermissions);
@@ -27,7 +28,7 @@ router.post('/createRole', addRole(), validation, createRole);
 router.put('/editRole/:id', editRoleValidator(), validation, editRole);
 router.delete('/removeRole/:id',removeRoleValidator(), validation, removeRole);
 
-router.put('/allocateRole/',allocateRoleToUser);
+router.put('/allocateRole/', allocationRoleValidator(), validation, allocateRoleToUser);
 router.put('/deallocateRole/',deallocateRole);
 
 module.exports = router;
