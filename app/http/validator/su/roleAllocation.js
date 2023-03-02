@@ -1,4 +1,4 @@
-const {body} = require('express-validator');
+const {body,param} = require('express-validator');
 const Validator = require('../../validator/validator');
 
 class roleAllocation extends Validator{
@@ -46,6 +46,22 @@ class roleAllocation extends Validator{
 
                         if(!! result.length){
                             throw new Error(`شناسه نقش (${result}) معتبر نمی باشد.`);
+                        }
+                    }
+                    return true;
+                })
+        ]
+    }
+
+    getUserRoles(){
+        return [
+            param('id')
+                .notEmpty()
+                .withMessage('شناسه کاربر را وارد کنید.')
+                .custom( id => {
+                    if(id){
+                        if(!Validator.isMongoId(id)){
+                            throw new Error('شناسه کاربر معتبر نمی باشد.');
                         }
                     }
                     return true;

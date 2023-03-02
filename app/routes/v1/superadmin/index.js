@@ -9,12 +9,12 @@ const { validation } = require('../../../http/middleware/adminValidation/validat
 // Controllers
 const {showAllPermissions, createPermission, editPermission, removePermission} = require('../../../http/controller/superadmin/permissionController');
 const {showAllRoles, showRoleDetails, createRole, editRole, removeRole} = require('../../../http/controller/superadmin/roleController');
-const {allocateRoleToUser, deallocateRole} = require('../../../http/controller/superadmin/roleAllocationController');
+const {allocateRoleToUser, updateUserRole, showUserRoles} = require('../../../http/controller/superadmin/roleAllocationController');
 
 // Validators
 const {addPermission, editPermission : editPermissionValidator, removePermission: removePermissionValidator} = require('../../../http/validator/su/permissions');
 const {addRole, editRole : editRoleValidator, removeRole :  removeRoleValidator} = require('../../../http/validator/su/roles');
-const {allocationRole : allocationRoleValidator} = require('../../../http/validator/su/roleAllocation');
+const {allocationRole : allocationRoleValidator, getUserRoles : getUserRolesValidator} = require('../../../http/validator/su/roleAllocation');
 
 // Routes
 router.get('/permissions',showAllPermissions);
@@ -29,6 +29,7 @@ router.put('/editRole/:id', editRoleValidator(), validation, editRole);
 router.delete('/removeRole/:id',removeRoleValidator(), validation, removeRole);
 
 router.put('/allocateRole/', allocationRoleValidator(), validation, allocateRoleToUser);
-router.put('/deallocateRole/',deallocateRole);
+router.get('/userRoles/:id',getUserRolesValidator(), validation,showUserRoles);
+router.put('/updateUserRole/:id',updateUserRole);
 
 module.exports = router;
