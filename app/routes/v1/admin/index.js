@@ -11,7 +11,7 @@ const userController = require('../../../http/controller/admin/userController');
 // Midllewares
 const {uploadPage, uploadPost} = require('../../../http/middleware/uploadImage');
 const { validation } = require('../../../http/middleware/adminValidation/validation');
-const gate = require('../../../../helpers/gate');
+const gate = require('../../../../helpers/gate');   //RBAC
 
 // Validation
 const {addPage, editPage, removePage, showPosts, removePageImage, activationPage} = require('../../../http/validator/pageValidation');
@@ -20,7 +20,7 @@ const {showUnapprovedComments, approveComment , removeComments} = require('../..
 const {showRequests, acceptOrRejectRequests} = require('../../../http/validator/private/requests');
 const {checkEditProfile} = require('../../../http/validator/userValidation');
 
-router.get('/', gate.can('show-admin-routes') ,(req, res, next) => {
+router.get('/', gate.is('show-admin-routes') ,(req, res, next) => {
     res.json('Private Routes');
 });
 
@@ -57,8 +57,8 @@ router.delete('/removePostLinks/:post', removeAllPostLink(), validation, postCon
 // Comment Routes
 router.get('/showComments/',showUnapprovedComments(), validation, commentController.showComments)
 // router.patch('/approveComment/:comment',approveComment(), validation, commentController.approveComment)
-router.patch('/approveComments',approveComment(), validation, commentController.approveComments)
+router.patch('/approveComments',gate.can(CONSTS.PERM_COMMENTS) ,approveComment(), validation, commentController.approveComments)
 // router.delete('/removeComment/:comment', removeComment(), validation, commentController.removeComment)
-router.delete('/removeComments', removeComments(), validation, commentController.removeComments)
+router.delete('/removeComments',gate.can(CONSTS.PERM_COMMENTS), removeComments(), validation, commentController.removeComments)
 
 module.exports = router;

@@ -31,11 +31,12 @@ const permissions = async ()=>{
 permissions().then(permissions=>{
     // console.log(permissions.roles);
     permissions.forEach(permission => {
-        let roles = permission.roles.map(item => item.name.toUpperCase());
-        // console.log(roles);
+        let roles = permission.roles.map(item => item.id); //.toUpperCase());
+
         gate.use(permission.name , (req) => {
             return req.user.hasRole(roles);
         });
+
     });
 })
 

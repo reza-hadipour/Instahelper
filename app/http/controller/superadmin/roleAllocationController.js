@@ -110,9 +110,15 @@ class roleAllocationController extends controller{
 
         let user = await userModel.findById(userId).populate('roles').exec();
         if(user){
-            let isSuperAdmin = user?.roles?.filter(role => {
-                return role.name == CONSTS.SUPERADMIN_ROLE_NAME; //role.id.toString();
-            })
+
+            // let isSuperAdmin = user?.roles?.filter(role => {
+            //     return role.name == CONSTS.SUPERADMIN_ROLE_NAME; //role.id.toString();
+            // })
+
+            let isSuperAdmin = user?.roles?.reduce((isSuperAdmin,role)=>{
+                if(role.name == CONSTS.SUPERADMIN_ROLE_NAME) isSuperAdmin.push(role.id); //role.id.toString();
+                return [...isSuperAdmin];
+            },[])
 
             // console.log('isSuperAdmin: ' , isSuperAdmin);
 
@@ -128,13 +134,14 @@ class roleAllocationController extends controller{
                 // console.log('userRole: ',!!userRole);
 
                 if(!userRole){  // Empty role list
-                    roleIds.add(isSuperAdmin[0]._id.toString());
+                    roleIds.add(isSuperAdmin[0]);
                     // return res.json('You can`t clear all your roles.')
                 }else if(!!isSuperAdmin.length){
                     // check userRoleInput for superAdmin
                     // Filter 'SuperAdmin' from input role list
                     if(roles){
-                        roleIds.add(isSuperAdmin[0]._id.toString());
+                        // roleIds.add(isSuperAdmin[0]._id.toString());
+                        roleIds.add(isSuperAdmin[0]);
                     }else{
                         return this.errorResponse(createHttpError.BadRequest('نقشی پیدا نشد.'),res);
                     }
@@ -142,7 +149,7 @@ class roleAllocationController extends controller{
             }else{ // For Other User
                 if(!userRole){  // Empty role list
                     //add USER role for user
-                    let roleUser = await roleModel.findOne({'name' : 'USER'});
+                    let roleUser = await roleModel.findOne({'name' : CONSTS.USER_ROLE_NAME});
                     if(roleUser){
                         roleIds.add(roleUser.id);
                     }else{
@@ -158,15 +165,14 @@ class roleAllocationController extends controller{
             await user.save();
             return res.json({
                 ...this.successPrams(),
-                message : 'User role updated successfully.',
-                user
+                message : 'نقش کاربر با موفقیت بروز رسانی شد.',
+                // user
             });
             
         }else{
             return this.errorResponse(createHttpError[404]('کاربر مورد نظر پیدا نشد.'),res);
         }
 
-        // res.json(`Update User\` Role.`);
     }
     
 }

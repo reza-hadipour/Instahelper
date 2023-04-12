@@ -64,6 +64,19 @@ class rollController extends controller {
     async editRole(req,res,next){
         let roleId = req?.params?.id;
         // VALIDATION check permissionIds
+        let bodyPerms = req?.body?.permissions;
+        if(bodyPerms){
+            let multiPermissions = [];
+    
+            if( typeof bodyPerms === 'string'){
+                multiPermissions.push(...bodyPerms.split(','));
+            }else{
+                multiPermissions = bodyPerms;
+            }
+            
+            req.body.permissions = multiPermissions;
+        }
+
         roleModel.findByIdAndUpdate(roleId,req.body,{new : true})
         .populate('permissions','name label')
         .exec((err,result)=>{

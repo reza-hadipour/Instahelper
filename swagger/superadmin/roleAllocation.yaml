@@ -1,0 +1,163 @@
+paths:
+
+  /su/userRoles/{id}:
+      get:
+        tags: ['Super Admin API - Role Allocation']
+        summary: "Show User`s Roles"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: '633c495129f15986cd60ba83'
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404Response"
+          400:
+            $ref: "#/components/responses/400BadRequestWrongUserId"
+          200:
+            description: "Show Users`a Role"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    user:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Sadegh'
+                        family:
+                          type: string
+                          example: 'Nikpour'
+                        email:
+                          type: string
+                          example: 'user@email.com'
+                        roles:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: '63da2af8225ddc392cbda81c'
+                              name:
+                                type: string
+                                example: 'AUTHOR'
+                              label:
+                                type: string
+                                example: 'نویسنده'
+
+  /su/allocateRole:
+      put:
+        tags: ['Super Admin API - Role Allocation']
+        summary: "Allocate Role to User[s]"
+        security:
+          - BearerAuth: []
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                required:
+                  - users
+                  - roles
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: string
+                    example: ["633c495129f15986cd60ba83","636a197d9c31231ef39fb1fa"]
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: ["63c3cb48d804e79f46db45c7","63da2af8225ddc392cbda81c"]
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          400:
+            $ref: "#/components/responses/400RoleNotFoundAllocation"
+          404:
+            $ref: "#/components/responses/404UserNotFoundInAllocation"
+          200:
+            description: "Allocating roles to users done successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: "نقش 2 کاربر به روز رسانی شد."
+
+  /su/updateUserRole/{id}:
+      put:
+        tags: ['Super Admin API - Role Allocation']
+        summary: "Edit user`s role"
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              example: "633c495129f15986cd60ba83"
+        requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                required:
+                  - role
+                type: object
+                properties:
+                  role:
+                    type: array
+                    items:
+                      type: string
+                    example: ['63da2af8225ddc392cbda81c','63c3cb48d804e79f46db45c7']
+                                        
+        responses:
+          401:
+            $ref: "#/components/responses/401Unauthorized"
+          404:
+            $ref: "#/components/responses/404UserNotFoundInAllocation"
+          400:
+            $ref: "#/components/responses/400RoleNotFoundAllocation"
+          200:
+            description: "Allocating roles to users done successfuly"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    statusCode:
+                      type: integer
+                      example: "200"
+                    message:
+                      type: string
+                      example: 'نقش کاربر با موفقیت بروز رسانی شد.'

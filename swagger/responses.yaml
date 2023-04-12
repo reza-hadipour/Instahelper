@@ -439,3 +439,60 @@ components:
                     message:
                       type: string
                       example: "نقشی با این شناسه یافت نشد."
+    400BadRequestWrongUserId:
+      description: "Bad request errors"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 400
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "id: شناسه کاربر معتبر نمی باشد."
+    404UserNotFoundInAllocation:
+      description: "User not found"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "failed"
+              statusCode:
+                type: string
+                example: 404
+              Error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "کاربر مورد نظر پیدا نشد."
+    400RoleNotFoundAllocation:
+        description: "Bad request Role not found"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: 'failed'
+                statusCode:
+                  type: string
+                  example: 400
+                Error:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "نقشی پیدا نشد."

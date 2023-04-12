@@ -15,6 +15,7 @@ const authenticateApi = require('../../http/middleware/authenticateApi');
 router.use('/admin',authenticateApi.handle ,adminRoutes);
 router.use('/auth', authenticationRoutes);
 router.use('/su', authenticateApi.handle ,superadminRoutes); // Using this routes as Adminstrator
+
 router.use('/public', publicRoutes);
 
 module.exports = router;

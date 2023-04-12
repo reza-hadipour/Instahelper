@@ -68,6 +68,47 @@ class roleAllocation extends Validator{
                 })
         ]
     }
+
+    updateUserRole(){
+        return [
+            param('id')
+                .notEmpty()
+                .withMessage('شناسه کاربر باید وارد شود.')
+                .custom( id => {
+                    if(id){
+                        if(!Validator.isMongoId(id)){
+                            throw new Error('شناسه وارد شده کاربر معتبر نمی باشد.')
+                        }else{
+                            return true;
+                        }
+                        
+                    }else{
+                        return true;
+                    }
+                })
+        ],
+
+        body('role')
+            .custom( role => {
+                if(role){
+                    let userRole = [];
+                    if( typeof role == 'string'){
+                        userRole.push(...role.split(','));
+                    }else{
+                        userRole = role;
+                    }
+    
+                    let result = userRole.filter( role => {
+                        if (!Validator.isMongoId(role)) return role;
+                    });
+    
+                    if( !! result.length ){
+                        throw new Error(`شناسه نقش (${result}) معتبر نمی باشد.`);
+                    }
+                }
+                return true;
+            })
+    }
 }
 
 module.exports = new roleAllocation;

@@ -17,3 +17,5 @@ tags:
     description: "Permission Functions"
   - name: "Super Admin API - Roles"
     description: "Role Functions"
+  - name: "Super Admin API - Role Allocation"
+    description: "Allocation Role to Users"
