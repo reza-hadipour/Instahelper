@@ -19,6 +19,8 @@ module.exports = {
     PERM_SA_VIEW_USER_ROLE : 'view-users-role',
     PERM_SA_MANAGE_USER_ROLE : 'manage-users-role',
 
+    GRAPHQL_PATH : '/graphql'
+
 
 }
 

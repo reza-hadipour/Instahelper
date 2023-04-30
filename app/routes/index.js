@@ -7,9 +7,10 @@ let apiV1 = require('./v1');
 router.use('/v1',apiV1);
 
 /* Test GET home page. */
-router.get('/', function(req, res, next) {
-  res.json({ title: 'Express'});
+router.get('/home', function(req, res, next) {
+  res.json({ title: 'Expressss'});
 });
+
 
 
 /**
@@ -17,7 +18,11 @@ router.get('/', function(req, res, next) {
  */
 
 router.use((req, res, next) => {
-  next(createHttpError.NotFound("صفحه مورد نظر یافت نشد."));
+  if(req.path == CONSTS.GRAPHQL_PATH){  // Exception for graphQL path
+    next();
+  }else{
+    next(createHttpError.NotFound("صفحه مورد نظر یافت نشد."));
+  }
 });
 
 router.use((error, req, res, next) => {

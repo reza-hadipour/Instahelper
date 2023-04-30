@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const createHttpError = require('http-errors');
 const mongoose = require('mongoose');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -11,6 +12,19 @@ const passport = require('passport');
 const expressSession = require('express-session');
 const redis = require('redis');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const {ApolloServerPluginLandingPageDisabled } = require('@apollo/server/plugin/disabled');
+const {ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
+// const {ApolloServerPluginLandingPageGraphQLPlayground  } = require('@apollo/server/plugin/landingPage/default');
+const {startStandaloneServer} = require('@apollo/server/standalone');
+const {ApolloServer} = require('@apollo/server');
+// const {ApolloServer} = require('apollo-server');
+const {typeDefs,resolvers} = require('./http/graphql');
+const http = require('http');
+
 
 // // Set RedicClient in global
 // myRedisClient = {};
@@ -45,19 +59,78 @@ class Application{
         this.setRoutes();
     }
 
-    setupExpress(){
-        let server = app.listen(port,()=>{
-            console.log(`Server is running on port ${port}`);
+    async setupExpress(){
+
+        // async function startAS(typeDefs,resolvers,apolloServer) {
+        //         await apolloServer.start();
+
+        //         app.use(
+        //             '/graphql',
+        //             cors(),
+        //             bodyParser.json({limit: '50mb'}),
+        //             expressMiddleware(apolloServer, {
+        //                 context: async ({ req }) => ({ token: req.headers.token }),
+        //               }),
+        //         );
+
+        //         // app.use('/graphql', expressMiddleware(apolloServer));
+        // }
+        
+        let httpServer = http.createServer(app);
+
+        let apolloServer = new ApolloServer(
+            {
+                typeDefs,
+                resolvers ,
+                nodeEnv:'development',
+                plugins : [
+                    // ApolloServerPluginDrainHttpServer({httpServer: httpServer}),    
+                    ApolloServerPluginLandingPageGraphQLPlayground({}),
+                    ApolloServerPluginLandingPageDisabled(),
+                ]
+            });
+            // apolloServer.addPlugin(ApolloServerPluginLandingPageGraphQLPlayground({}));
+
+            
+        // const {url} = await startStandaloneServer(apolloServer,{
+        //     context: async ({ req }) => ({ token: req.headers.token }),
+        //     listen: { port: 4001},
+        //   })
+        // console.log(url);
+        
+        await apolloServer.start()
+        
+        app.use(
+                CONSTS.GRAPHQL_PATH,
+                cors(),
+                bodyParser.json({limit: '50mb'}),
+                expressMiddleware(apolloServer, {
+                    context: async ({ req }) => ({ token: req.headers.token }),
+                    }),
+            );
+
+        // app.use('/gr',cors(),bodyParser.json(), expressMiddleware(apolloServer));
+
+        // await startAS(typeDefs,resolvers,apolloServer);
+        
+        // let server = app.listen(port,()=>{
+        let server = httpServer.listen(port,()=>{
+            // console.log(`Server is running on port ${port}`);
             this.host = server.address().address;
-        })//.on('error',this.onError);
+        });
 
         server.on('error',this.onError);
         server.on('listening',this.onListening);
+            
     }
+
 
     setMongoConnection(){
         mongoose.connect(configs.database.mongodb.url)
-            .then(()=>debugDB('Connected to MongoDB Succesfully'))
+            .then(async ()=>{
+                await mongoose.set('strictQuery',false);
+                debugDB('Connected to MongoDB Succesfully')
+            })
             .catch(err=>debugDB(err));
     }
     
@@ -91,7 +164,6 @@ class Application{
         app.use(passport.session());
         app.use(cors());
         app.use(gate.middleware());
-
     }
 
     setSwagger(){
@@ -132,6 +204,7 @@ class Application{
     setRoutes(){
         app.use(require('./routes'));
     }
+
 
     onListening() {
         var addr = this.host;
