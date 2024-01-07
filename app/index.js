@@ -17,7 +17,7 @@ const bodyParser = require('body-parser');
 const { expressMiddleware } = require('@apollo/server/express4');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
 const {ApolloServerPluginLandingPageDisabled } = require('@apollo/server/plugin/disabled');
-const {ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
+const {ApolloServerPluginLandingPageGraphQLPlayground } = require('@apollo/server-plugin-landing-page-graphql-playground');
 // const {ApolloServerPluginLandingPageGraphQLPlayground  } = require('@apollo/server/plugin/landingPage/default');
 const {startStandaloneServer} = require('@apollo/server/standalone');
 const {ApolloServer} = require('@apollo/server');
@@ -82,11 +82,11 @@ class Application{
             {
                 typeDefs,
                 resolvers ,
-                nodeEnv:'development',
+                nodeEnv: process.env.NODE_ENV,
                 plugins : [
-                    // ApolloServerPluginDrainHttpServer({httpServer: httpServer}),    
-                    ApolloServerPluginLandingPageGraphQLPlayground({}),
-                    ApolloServerPluginLandingPageDisabled(),
+                    ApolloServerPluginDrainHttpServer({httpServer: httpServer}),    
+                    ApolloServerPluginLandingPageGraphQLPlayground(),
+                    // ApolloServerPluginLandingPageDisabled(),
                 ]
             });
             // apolloServer.addPlugin(ApolloServerPluginLandingPageGraphQLPlayground({}));
@@ -97,6 +97,7 @@ class Application{
         //     listen: { port: 4001},
         //   })
         // console.log(url);
+        console.log('NODE_ENV: ' ,process.env.NODE_ENV);
         
         await apolloServer.start()
         
