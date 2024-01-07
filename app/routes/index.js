@@ -12,7 +12,6 @@ router.get('/home', function(req, res, next) {
 });
 
 
-
 /**
  * Error Handler
  */

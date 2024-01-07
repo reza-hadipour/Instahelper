@@ -8,8 +8,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.7.0",
-    "apollo-server": "^3.12.0",
-    "apollo-server-core": "^3.12.0",
+    "@apollo/server-plugin-landing-page-graphql-playground": "^4.0.0",
     "app-module-path": "^2.2.0",
     "auto-bind": "^4.0.0",
     "axios": "^1.1.3",
