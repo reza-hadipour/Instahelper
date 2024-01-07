@@ -24,4 +24,4 @@ Apollo Server, a popular GraphQL server for Node.js, can be used to handle the G
 Overall, this project aims to provide users with a robust and efficient task management tool, enabling them to stay organized and increase productivity in their personal and professional lives.
 
 
-<<Above context is created by chatGPT>>
+"Above context is created by chatGPT"
